@@ -1,0 +1,40 @@
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useStore } from '../app/providers';
+import { eur } from '../lib/data';
+
+const links = [
+  ['/', 'Проектът'],
+  ['/market', 'Вторичен пазар'],
+  ['/profile', 'Моят профил'],
+  ['/admin', 'Админ панел'],
+];
+
+export default function Nav() {
+  const path = usePathname();
+  const { s } = useStore();
+  return (
+    <>
+      <div className="demo-bar">
+        ДЕМО · измислен проект и измислени цифри · не е инвестиционно предложение
+      </div>
+      <header className="nav">
+        <Link href="/" className="logo">
+          <span className="logo-mark">◆</span> Token<b>Estate</b>
+        </Link>
+        <nav>
+          {links.map(([h, t]) => (
+            <Link key={h} href={h} className={path === h ? 'on' : ''}>
+              {t}
+            </Link>
+          ))}
+        </nav>
+        <div className="wallet">
+          <span>Демо портфейл</span>
+          <b>{eur(s.cash)}</b>
+        </div>
+      </header>
+    </>
+  );
+}
