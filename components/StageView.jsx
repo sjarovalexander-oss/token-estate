@@ -36,7 +36,7 @@ export default function StageView({ p, stage = 0, auto = false, height = 520, ba
             className={(i === st ? 'cur ' : '') + (!auto && i <= stage ? 'done' : '')}
             onMouseEnter={() => !auto && setPeek(i)}
             onMouseLeave={() => !auto && setPeek(null)}
-            onClick={() => (auto ? setTick(i) : setPeek(peek === i ? null : i))}
+            onClick={() => (auto ? setTick(i) : setPeek(i === stage ? null : i))}
             title={s.k}
           >
             <img src={still(p.cat, frames[i])} alt="" loading="lazy" />
