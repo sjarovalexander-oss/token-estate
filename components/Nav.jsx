@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStore } from '../app/providers';
-import { eur } from '../lib/data';
+import { eur, CATS } from '../lib/data';
+import { usePreloadStatus } from '../lib/preload';
 
 const links = [
   ['/', 'Проекти'],
@@ -17,6 +18,7 @@ const links = [
 export default function Nav() {
   const path = usePathname();
   const { s } = useStore();
+  const pre = usePreloadStatus(CATS.map((c) => c.slug));
   // лента за зареждане: показва се веднага при клик върху вътрешен линк
   const [busy, setBusy] = useState(false);
   useEffect(() => setBusy(false), [path]);
@@ -45,6 +47,7 @@ export default function Nav() {
             </Link>
           ))}
         </nav>
+        {pre.active && <div className="prestat">филми {pre.done}/{pre.total}</div>}
         <div className="wallet">
           <span>Демо портфейл</span>
           <b>{eur(s.cash)}</b>

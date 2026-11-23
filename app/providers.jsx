@@ -1,6 +1,7 @@
 'use client';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { FEE, PROJECTS, getP, fairValue, initState, last, today, syncCustom, makeProject, seedProj } from '../lib/data';
+import { startPreload } from '../lib/preload';
+import { CATS, FEE, PROJECTS, getP, fairValue, initState, last, today, syncCustom, makeProject, seedProj } from '../lib/data';
 
 const Ctx = createContext(null);
 const KEY = 'token-estate-demo-v3';
@@ -18,6 +19,12 @@ export default function Providers({ children }) {
       st = JSON.parse(localStorage.getItem(KEY));
     } catch (e) {}
     setS(st && st.v === 3 ? st : initState());
+  }, []);
+
+  // филмите на секциите се теглят на заден план още при отваряне на сайта
+  useEffect(() => {
+    const t = setTimeout(() => startPreload(CATS.map((c) => c.slug)), 1500);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {

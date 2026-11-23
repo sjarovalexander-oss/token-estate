@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useVideo } from '../lib/preload';
 
 // Показва колко от филма е заредено и отключва превъртането на телефони
 function useScrubVideo(vid) {
@@ -78,7 +79,8 @@ export function Story({ name, chapters, label }) {
   const wrap = useRef(null), vid = useRef(null), els = useRef([]), fill = useRef(null);
   const [ok, setOk] = useState(true);
   const [act, setAct] = useState(0);
-  const pct = useScrubVideo(vid);
+  const pre = useVideo(name, true);
+  const src = pre.src || (pre.failed ? `/video/${name}.mp4` : null);
   const n = chapters.length;
   useEffect(() => {
     let raf, cur = 0, last = -1;
@@ -114,9 +116,15 @@ export function Story({ name, chapters, label }) {
   return (
     <section ref={wrap} className={'film story' + (ok ? '' : ' novid')} style={{ height: n * 105 + 'vh' }}>
       <div className="film-sticky">
-        {ok && <video ref={vid} src={`/video/${name}.mp4`} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" onError={() => setOk(false)} />}
+        {ok && <video ref={vid} src={src || undefined} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" onError={() => src && setOk(false)} />}
         <div className="story-shade" />
-        {ok && pct < 98 && <div className="film-load">зарежда се {pct}%</div>}
+        {ok && !src && (
+          <div className="film-wait">
+            <b>{pre.pct}%</b>
+            <span>зареждане на филма</span>
+            <div className="bar"><i style={{ width: pre.pct + '%' }} /></div>
+          </div>
+        )}
         {label && <div className="story-label">{label}</div>}
         {chapters.map((c, k) => (
           <div key={c.t} ref={(el) => (els.current[k] = el)} className={'chap ' + (k % 2 ? 'right' : 'left')}>
