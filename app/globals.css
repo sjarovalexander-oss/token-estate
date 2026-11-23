@@ -383,3 +383,5 @@ html, body { overflow-x: clip; }
 }
 .chap { max-width: min(900px, 90vw); }
 @media (min-width: 901px) { .chap-txt h2 { white-space: nowrap; } }
+.navbar-busy { position: fixed; top: 0; left: 0; height: 3px; z-index: 100; background: linear-gradient(90deg, #9c7a35, var(--gold2)); box-shadow: 0 0 12px var(--gold); animation: busy 8s cubic-bezier(.1, .7, .2, 1) forwards; }
+@keyframes busy { from { width: 0; } to { width: 92%; } }

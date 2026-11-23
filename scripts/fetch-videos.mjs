@@ -22,10 +22,10 @@ mkdirSync(CACHE, { recursive: true });
 const ff = (args) => execFileSync(ffmpeg, ['-y', '-loglevel', 'error', ...args]);
 const done = [];
 for (const [name, files] of Object.entries(VIDEOS)) {
-  const key = name + '-' + createHash('md5').update('v2' + files.join()).digest('hex').slice(0, 10);
-  const cm = `${CACHE}/${key}.mp4`, cj = `${CACHE}/${key}.jpg`, cs = `${CACHE}/${key}-start.jpg`;
+  const key = name + '-' + createHash('md5').update('v3' + files.join()).digest('hex').slice(0, 10);
+  const cm = `${CACHE}/${key}.mp4`, cj = `${CACHE}/${key}.jpg`, cs = `${CACHE}/${key}-start.jpg`, cl = `${CACHE}/${key}-loop.mp4`;
   try {
-    if (!existsSync(cm) || !existsSync(cj) || !existsSync(cs)) {
+    if (!existsSync(cm) || !existsSync(cj) || !existsSync(cs) || !existsSync(cl)) {
       const parts = [];
       for (const [i, f] of files.entries()) {
         const res = await fetch(BASE + f + '.mp4');
@@ -36,14 +36,17 @@ for (const [name, files] of Object.entries(VIDEOS)) {
       }
       const inputs = parts.flatMap((p) => ['-i', p]);
       const chain = parts.map((_, i) => `[${i}:v]scale=1280:720,fps=24,setsar=1[v${i}]`).join(';') + ';' + parts.map((_, i) => `[v${i}]`).join('') + `concat=n=${parts.length}:v=1:a=0[out]`;
-      ff([...inputs, '-filter_complex', chain, '-map', '[out]', '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '26', '-g', '2', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', cm]);
+      ff([...inputs, '-filter_complex', chain, '-map', '[out]', '-an', '-c:v', 'libx264', '-preset', 'medium', '-crf', '30', '-g', '8', '-bf', '0', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', cm]);
       ff(['-sseof', '-0.3', '-i', cm, '-frames:v', '1', '-q:v', '4', cj]);
       ff(['-i', cm, '-frames:v', '1', '-q:v', '4', cs]);
+      // малка версия за фоновете, които се въртят сами
+      ff(['-i', cm, '-an', '-vf', 'scale=768:432', '-c:v', 'libx264', '-preset', 'medium', '-crf', '33', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', cl]);
       parts.forEach((p) => rmSync(p));
     }
     copyFileSync(cm, `${OUT}/${name}.mp4`);
     copyFileSync(cj, `${OUT}/${name}.jpg`);
     copyFileSync(cs, `${OUT}/${name}-start.jpg`);
+    copyFileSync(cl, `${OUT}/${name}-loop.mp4`);
     done.push(name);
     console.log('video ok:', name, `(${files.length} части)`);
   } catch (e) {

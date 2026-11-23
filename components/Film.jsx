@@ -2,16 +2,23 @@
 import { useEffect, useRef, useState } from 'react';
 
 // Зарежда целия видео файл в паметта, за да е мигновено превъртането при скрол
-function useBlobVideo(name, setOk) {
+function useBlobVideo(name, setOk, wrap) {
   const [src, setSrc] = useState(null);
   useEffect(() => {
-    let url, dead = false;
-    fetch(`/video/${name}.mp4`)
-      .then((r) => (r.ok ? r.blob() : Promise.reject()))
-      .then((b) => { if (!dead) { url = URL.createObjectURL(b); setSrc(url); } })
-      .catch(() => !dead && setOk(false));
-    return () => { dead = true; if (url) URL.revokeObjectURL(url); };
-  }, [name, setOk]);
+    let url, dead = false, started = false;
+    const load = () => {
+      if (started) return;
+      started = true;
+      fetch(`/video/${name}.mp4`)
+        .then((r) => (r.ok ? r.blob() : Promise.reject()))
+        .then((b) => { if (!dead) { url = URL.createObjectURL(b); setSrc(url); } })
+        .catch(() => !dead && setOk(false));
+    };
+    // тегли се чак когато филмът наближи екрана, за да не бави останалата страница
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && (load(), io.disconnect()), { rootMargin: '120% 0px' });
+    if (wrap.current) io.observe(wrap.current); else load();
+    return () => { dead = true; io.disconnect(); if (url) URL.revokeObjectURL(url); };
+  }, [name, setOk, wrap]);
   return src;
 }
 
@@ -19,7 +26,7 @@ function useBlobVideo(name, setOk) {
 export function Film({ name, height = '210vh', children }) {
   const wrap = useRef(null), vid = useRef(null);
   const [ok, setOk] = useState(true);
-  const src = useBlobVideo(name, setOk);
+  const src = useBlobVideo(name, setOk, wrap);
   useEffect(() => {
     let raf, cur = 0;
     const loop = () => {
@@ -62,7 +69,7 @@ export function LoopVideo({ name, className = '' }) {
     return () => io.disconnect();
   }, [ok]);
   if (!ok) return null;
-  return <video ref={ref} className={'loopvid ' + className} src={`/video/${name}.mp4`} poster={`/video/${name}.jpg`} muted loop playsInline preload="none" onError={() => setOk(false)} />;
+  return <video ref={ref} className={'loopvid ' + className} src={`/video/${name}-loop.mp4`} poster={`/video/${name}.jpg`} muted loop playsInline preload="none" onError={() => setOk(false)} />;
 }
 
 // Скрол филм на глави: една сцена, която се преобразява, с номер и текст за всяка глава
@@ -70,7 +77,7 @@ export function Story({ name, chapters, label }) {
   const wrap = useRef(null), vid = useRef(null), els = useRef([]), fill = useRef(null);
   const [ok, setOk] = useState(true);
   const [act, setAct] = useState(0);
-  const src = useBlobVideo(name, setOk);
+  const src = useBlobVideo(name, setOk, wrap);
   const n = chapters.length;
   useEffect(() => {
     let raf, cur = 0, last = -1;
