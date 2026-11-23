@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useStore } from './providers';
 import ProjectCard from '../components/ProjectCard';
 import { Reveal, Count } from '../components/Bits';
+import { Film, LoopVideo } from '../components/Film';
 import { CATS, PROJECTS, PROFILES, DEPOSIT, annual, eur, last } from '../lib/data';
 
 const Scene3D = dynamic(() => import('../components/Scene3D'), { ssr: false });
@@ -47,13 +48,22 @@ export default function Home() {
 
   return (
     <>
+      <Film name="home">
+        <div className="eyebrow">Платформа за токенизация на реални активи</div>
+        <h1>Инвестирай на части в сгради, енергия, хотели и земя</h1>
+        <p className="lead">Реални проекти, разделени на токени от <b>500 €</b>. Избираш секция, следиш проекта на живо и получаваш своя дял от дохода.</p>
+        <div className="row">
+          <a className="btn" href="#sections">Разгледай секциите</a>
+          <Link className="btn ghost lg" href="/portfolio">Сглоби портфейл</Link>
+        </div>
+      </Film>
+
       <section className="hero">
         <div className="hero-txt">
-          <div className="eyebrow">Платформа за токенизация на реални активи</div>
-          <h1>Инвестирай на части в сгради, енергия, хотели и земя</h1>
+          <div className="eyebrow">Шест секции · шест живи 3D модела</div>
+          <h2 className="h1s">Всеки проект се вижда, преди да вложиш</h2>
           <p className="lead">
-            Шест секции с различен риск, срок и начин на изплащане. Всеки проект е разделен на токени, които купуваш от{' '}
-            <b>500 €</b> и можеш да продадеш на вторичния пазар.
+            Различен риск, срок и начин на изплащане. Купуваш токени от <b>500 €</b> и можеш да ги продадеш на вторичния пазар.
           </p>
           <div className="kpis three">
             <div className="card kpi"><span>Проекти</span><b><Count to={PROJECTS.length} /> <small>в {CATS.length} секции</small></b></div>
@@ -97,7 +107,8 @@ export default function Home() {
 
       {CATS.map((c) => (
         <Reveal key={c.slug} id={c.slug} className="sector">
-          <div className="sector-head card">
+          <div className="sector-head card hasvid">
+            <LoopVideo name={c.slug} />
             <div className="sector-icon">{c.icon}</div>
             <div className="grow">
               <h2>{c.name}</h2>

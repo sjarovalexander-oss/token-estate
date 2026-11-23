@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useStore } from '../../providers';
+import { LoopVideo } from '../../../components/Film';
 import BuyModal from '../../../components/BuyModal';
 import { PayoutChart } from '../../../components/Bits';
 import { FEE, PROJECTS, getP, getC, eur, last, target, totalPer, retLabel, termLabel } from '../../../lib/data';
@@ -99,6 +100,15 @@ export default function Project() {
 
   return (
     <>
+      <section className="vbanner">
+        <LoopVideo name={p.cat} key={p.cat} />
+        <div className="film-shade" />
+        <div className="vb-txt">
+          <div className="eyebrow">{p.loc}</div>
+          <h2>{c.icon} {c.name}</h2>
+        </div>
+      </section>
+
       <section className="hero">
         <div className="hero-3d">
           <Scene3D type={p.scene} stage={ps.stage} frac={ps.prog / p.N} height={560} />

@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Film } from '../../../components/Film';
 import ProjectCard from '../../../components/ProjectCard';
 import { CATS, PROJECTS, getC, last } from '../../../lib/data';
 
@@ -21,11 +22,16 @@ export default function Sector() {
         ))}
       </nav>
 
+      <Film name={c.slug} height="190vh" key={c.slug}>
+        <div className="eyebrow">Секция</div>
+        <h1>{c.icon} {c.name}</h1>
+        <p className="lead">{c.lead}</p>
+      </Film>
+
       <section className="hero">
         <div className="hero-txt">
-          <div className="eyebrow">Секция</div>
-          <h1>{c.icon} {c.name}</h1>
-          <p className="lead">{c.lead}</p>
+          <div className="eyebrow">Числата на секцията</div>
+          <h2 className="h1s">{c.income.split('.')[0]}.</h2>
           <div className="kpis three">
             <div className="card kpi"><span>Типичен срок</span><b>{c.term}</b></div>
             <div className="card kpi"><span>Типична доходност</span><b className="gold">{c.ret}</b></div>
