@@ -381,3 +381,5 @@ html, body { overflow-x: clip; }
   .rail-ticks b { font-size: 11px; }
   .story-label { top: 120px; }
 }
+.chap { max-width: min(900px, 90vw); }
+@media (min-width: 901px) { .chap-txt h2 { white-space: nowrap; } }

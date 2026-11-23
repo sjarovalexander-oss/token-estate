@@ -1,10 +1,25 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
+// Зарежда целия видео файл в паметта, за да е мигновено превъртането при скрол
+function useBlobVideo(name, setOk) {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    let url, dead = false;
+    fetch(`/video/${name}.mp4`)
+      .then((r) => (r.ok ? r.blob() : Promise.reject()))
+      .then((b) => { if (!dead) { url = URL.createObjectURL(b); setSrc(url); } })
+      .catch(() => !dead && setOk(false));
+    return () => { dead = true; if (url) URL.revokeObjectURL(url); };
+  }, [name, setOk]);
+  return src;
+}
+
 // Видео на цял екран, което се превърта със скролването
 export function Film({ name, height = '210vh', children }) {
   const wrap = useRef(null), vid = useRef(null);
   const [ok, setOk] = useState(true);
+  const src = useBlobVideo(name, setOk);
   useEffect(() => {
     let raf, cur = 0;
     const loop = () => {
@@ -15,7 +30,7 @@ export function Film({ name, height = '210vh', children }) {
         w.style.setProperty('--p', p.toFixed(4));
         if (v && v.duration && r.bottom > 0) {
           cur += (p * (v.duration - 0.08) - cur) * 0.16;
-          if (Math.abs(v.currentTime - cur) > 0.02) v.currentTime = cur;
+          if (!v.seeking && Math.abs(v.currentTime - cur) > 0.02) v.currentTime = cur;
         }
       }
       raf = requestAnimationFrame(loop);
@@ -26,7 +41,7 @@ export function Film({ name, height = '210vh', children }) {
   return (
     <section ref={wrap} className={'film' + (ok ? '' : ' novid')} style={{ height }}>
       <div className="film-sticky">
-        {ok && <video ref={vid} src={`/video/${name}.mp4`} poster={`/video/${name}.jpg`} muted playsInline preload="auto" onError={() => setOk(false)} />}
+        {ok && <video ref={vid} src={src || undefined} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" />}
         <div className="film-shade" />
         <div className="film-txt">{children}</div>
         <div className="film-hint">скролни надолу<i /></div>
@@ -55,6 +70,7 @@ export function Story({ name, chapters, label }) {
   const wrap = useRef(null), vid = useRef(null), els = useRef([]), fill = useRef(null);
   const [ok, setOk] = useState(true);
   const [act, setAct] = useState(0);
+  const src = useBlobVideo(name, setOk);
   const n = chapters.length;
   useEffect(() => {
     let raf, cur = 0, last = -1;
@@ -68,7 +84,7 @@ export function Story({ name, chapters, label }) {
           const i = Math.min(n - 2, Math.floor(x)), f = x - i, e = f * f * (3 - 2 * f);
           if (v && v.duration) {
             cur += (((i + e) / (n - 1)) * (v.duration - 0.08) - cur) * 0.16;
-            if (Math.abs(v.currentTime - cur) > 0.02) v.currentTime = cur;
+            if (!v.seeking && Math.abs(v.currentTime - cur) > 0.02) v.currentTime = cur;
           }
           els.current.forEach((el, k) => {
             if (!el) return;
@@ -90,7 +106,7 @@ export function Story({ name, chapters, label }) {
   return (
     <section ref={wrap} className={'film story' + (ok ? '' : ' novid')} style={{ height: n * 105 + 'vh' }}>
       <div className="film-sticky">
-        {ok && <video ref={vid} src={`/video/${name}.mp4`} muted playsInline preload="auto" onError={() => setOk(false)} />}
+        {ok && <video ref={vid} src={src || undefined} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" />}
         <div className="story-shade" />
         {label && <div className="story-label">{label}</div>}
         {chapters.map((c, k) => (
