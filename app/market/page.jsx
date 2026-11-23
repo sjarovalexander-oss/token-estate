@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
 import { usePicked } from '../../components/ProjectPicker';
-import { Count } from '../../components/Bits';
 import { FEE, PROJECTS, getP, getC, fairValue, still, eur, totalPer, last } from '../../lib/data';
 
 const frameOf = (p, st) => (p.frames ? p.frames[st] : Math.min(st, 3));
@@ -136,7 +135,7 @@ export default function Market() {
         </div>
         <div className="mk-price card">
           <span>Ориентировъчна стойност</span>
-          <b className={flash ? 'tick' : ''} key={flash}><Count to={openMkt ? lastTrade : fair} fmt={eur} /></b>
+          <b className={flash ? 'tick' : ''} key={flash}>{eur(openMkt ? lastTrade : fair)}</b>
           <em className={chg >= 0 ? 'green' : 'red'}>{pctTxt(chg)} спрямо първичната цена {eur(p.price)}</em>
           <div className="mk-mini">
             <div><span>Най-добра оферта</span><b>{best ? eur(fair + best.off) : '–'}</b></div>
