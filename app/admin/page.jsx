@@ -1,177 +1,209 @@
 'use client';
 import { useState } from 'react';
-import { useStore } from '../providers';
-import ProjectPicker, { usePicked } from '../../components/ProjectPicker';
 import Link from 'next/link';
-import { CATS, PROJECTS, getP, getC, fairValue, platformRevenue, target, last, eur } from '../../lib/data';
+import { useStore } from '../providers';
+import { usePicked } from '../../components/ProjectPicker';
+import StageView from '../../components/StageView';
+import { Count } from '../../components/Bits';
+import { CATS, PROJECTS, getP, getC, fairValue, platformRevenue, target, last, still, STILLS, eur } from '../../lib/data';
+
+const frameOf = (p, st) => (p.frames ? p.frames[st] : Math.min(st, 3));
 
 export default function Admin() {
   const { s, setStage, setProg, complete, release, approveKyc, addNews, reset, approveApp, rejectApp } = useStore();
   const [pid, setPid] = usePicked();
   const [news, setNews] = useState('');
+  const [tab, setTab] = useState('stage');
   const p = getP(pid) || PROJECTS[0];
   const ps = s.proj[p.id];
   const L = last(p);
   const raisedAll = PROJECTS.reduce((a, x) => a + s.proj[x.id].sold * x.price, 0);
-  const revAll = PROJECTS.reduce((a, x) => a + platformRevenue(x, s.proj[x.id]).total, 0);
+  const goalAll = PROJECTS.reduce((a, x) => a + target(x), 0);
+  const revs = PROJECTS.map((x) => ({ x, r: platformRevenue(x, s.proj[x.id]) }));
+  const revAll = revs.reduce((a, y) => a + y.r.total, 0);
+  const maxRev = Math.max(1, ...revs.map((y) => y.r.total));
   const rev = platformRevenue(p, ps);
   const raised = ps.sold * p.price;
   const relPct = p.tr.reduce((a, t, i) => a + (ps.released[i] ? t : 0), 0);
   const escrow = raised * (1 - relPct / 100);
+  const pending = s.apps.filter((a) => a.status === 'new');
+  const kycWait = s.investors.filter((x) => !x.kyc).length;
 
   return (
     <>
-      <section className="page-head">
+      <section className="ad-head">
         <div>
           <div className="eyebrow">Админ панел · оператор на платформата</div>
-          <h1>Управление на проектите</h1>
-          <p className="muted">Демо достъп без парола. Промените тук се виждат веднага в останалите страници.</p>
+          <h1>Контролен център</h1>
+          <p className="muted">Демо достъп без парола. Всяка промяна тук се вижда веднага в сайта.</p>
         </div>
-        <button className="btn ghost" onClick={reset}>Нулирай демото</button>
+        <div className="row">
+          {pending.length > 0 && <a className="ad-alert" href="#apps">🔔 {pending.length} {pending.length === 1 ? 'нова заявка' : 'нови заявки'}</a>}
+          {kycWait > 0 && <a className="ad-alert warn" href="#kyc">🪪 {kycWait} чакат KYC</a>}
+          <button className="btn ghost" onClick={reset}>Нулирай демото</button>
+        </div>
       </section>
 
-      <section className="kpis">
-        <div className="card kpi"><span>Набрани общо</span><b className="gold">{eur(raisedAll)}</b></div>
-        <div className="card kpi"><span>Проекти</span><b>{PROJECTS.length} <small>в {CATS.length} секции</small></b></div>
-        <div className="card kpi"><span>Инвеститори с чакащ KYC</span><b>{s.investors.filter((x) => !x.kyc).length}</b></div>
-        <div className="card kpi"><span>Приходи на платформата</span><b className="green">{eur(revAll)}</b></div>
+      <section className="pf-kpis">
+        <div className="card kpi"><span>Набрани общо</span><b className="gold"><Count to={raisedAll} fmt={eur} /></b><em className="kpi-sub">{Math.round((raisedAll / goalAll) * 100)}% от целта {eur(goalAll)}</em></div>
+        <div className="card kpi"><span>Приходи на платформата</span><b className="green"><Count to={revAll} fmt={eur} /></b><em className="kpi-sub">такси при набиране, успех и пазар</em></div>
+        <div className="card kpi"><span>Проекти</span><b>{PROJECTS.length}</b><em className="kpi-sub">{PROJECTS.filter((x) => s.proj[x.id].stage > 0).length} работят · {PROJECTS.filter((x) => s.proj[x.id].stage === 0).length} набират</em></div>
+        <div className="card kpi"><span>Инвеститори</span><b>{s.investors.length + 1}</b><em className="kpi-sub">{kycWait} чакат проверка</em></div>
       </section>
 
-      <section className="card">
-        <h3>Всички проекти</h3>
-        <table className="tbl full click">
-          <thead><tr><th>Проект</th><th>Секция</th><th>Токени</th><th>Набрани</th><th>Етап</th><th>Приход</th></tr></thead>
-          <tbody>
-            {PROJECTS.map((x) => {
-              const xs = s.proj[x.id];
-              return (
-                <tr key={x.id} className={x.id === p.id ? 'hl' : ''} onClick={() => setPid(x.id)}>
-                  <td>{x.name}</td>
-                  <td>{getC(x.cat).icon} {getC(x.cat).name}</td>
-                  <td>{xs.sold} / {x.tokens}</td>
-                  <td>{eur(xs.sold * x.price)}</td>
-                  <td>{x.stages[xs.stage].short}</td>
-                  <td>{eur(platformRevenue(x, xs).total)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <section>
+        <div className="mk-head"><h3 className="sec-h">Проекти</h3><span className="muted small">избери проект, за да го управляваш</span></div>
+        <div className="ad-grid">
+          {PROJECTS.map((x) => {
+            const xs = s.proj[x.id];
+            return (
+              <button key={x.id} className={'ad-card' + (x.id === p.id ? ' on' : '')} onClick={() => setPid(x.id)}>
+                <img src={still(x.cat, frameOf(x, xs.stage))} alt="" />
+                <div className="mk-card-shade" />
+                <div className="ad-card-top">
+                  <span className="sv-chip"><i style={{ background: xs.stage ? 'var(--green)' : 'var(--gold)' }} /> {x.stages[xs.stage].short}</span>
+                  {x.custom && <span className="tag ok">нов</span>}
+                </div>
+                <div className="mk-card-body">
+                  <span>{getC(x.cat).icon} {x.name}</span>
+                  <b>{eur(xs.sold * x.price)}</b>
+                  <div className="bar"><i style={{ width: (xs.sold / x.tokens) * 100 + '%' }} /></div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="ad-work">
+        <div className="card ad-view">
+          <div className="mk-head">
+            <h3>{getC(p.cat).icon} {p.name}</h3>
+            <Link className="small" href={'/project/' + p.id}>виж страницата →</Link>
+          </div>
+          <StageView key={p.id} p={p} stage={ps.stage} height={360} badge={<span className="sv-badge">токен ≈ {eur(fairValue(p, ps))}</span>} />
+          <div className="ad-mini">
+            <div><span>Набрани</span><b>{eur(raised)}</b></div>
+            <div><span>Токени</span><b>{ps.sold} / {p.tokens}</b></div>
+            <div><span>В ескроу</span><b>{eur(escrow)}</b></div>
+            <div><span>Приход</span><b className="green">{eur(rev.total)}</b></div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="seg ad-tabs">
+            {[['stage', 'Етап'], ['money', 'Траншове'], ['news', 'Новина']].map(([k, t]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t}</button>)}
+          </div>
+          {tab === 'stage' && (
+            <>
+              <div className="ad-stages">
+                {p.stages.map((st, i) => (
+                  <button key={st.k} className={(i === ps.stage ? 'on ' : '') + (i < ps.stage ? 'done' : '')} onClick={() => (i === 1 && ps.stage === 0 ? complete(p.id) : setStage(p.id, i))}>
+                    <img src={still(p.cat, frameOf(p, i))} alt="" />
+                    <span><b>{i + 1}</b> {st.k}</span>
+                  </button>
+                ))}
+              </div>
+              <label>{p.unit}: <b>{ps.prog}</b> / {p.N}</label>
+              <input type="range" min="0" max={p.N} value={ps.prog} disabled={ps.stage !== L} onChange={(e) => setProg(p.id, +e.target.value)} />
+              <p className="muted small">{ps.stage !== L ? `Плъзгачът се отключва на последния етап: „${p.stages[L].k}“.` : 'Всяко плащане се отразява веднага в профилите на инвеститорите.'}</p>
+            </>
+          )}
+          {tab === 'money' && (
+            <>
+              <div className="ad-escrow"><span>В ескроу сметката</span><b>{eur(escrow)}</b><div className="bar"><i style={{ width: 100 - relPct + '%' }} /></div><em>{relPct}% освободени към партньора</em></div>
+              <ul className="ad-tr">
+                {p.tr.map((t, i) => t ? (
+                  <li key={i}>
+                    <img src={still(p.cat, frameOf(p, Math.min(i + 1, L)))} alt="" />
+                    <div className="grow"><b>Транш {i + 1} · {p.stages[i + 1].short}</b><span className="muted">{t}% · {eur((target(p) * t) / 100)}</span></div>
+                    {ps.released[i] ? <span className="tag ok">освободен</span> : <button className="btn sm" disabled={ps.stage < i + 1} onClick={() => release(p.id, i)}>Освободи</button>}
+                  </li>
+                ) : null)}
+              </ul>
+              <p className="muted small">Транш се освобождава само след достигнат етап и доклад на независим надзор.</p>
+            </>
+          )}
+          {tab === 'news' && (
+            <>
+              <p className="muted small">Новината излиза на страницата на проекта и при инвеститорите.</p>
+              <textarea rows="4" value={news} onChange={(e) => setNews(e.target.value)} placeholder="Напр. Достигнат е следващият етап." />
+              <div className="seg">
+                {['Достигнат е нов етап.', 'Изплатено е тримесечно плащане.', 'Публикуван е отчетът на надзора.'].map((t) => <button key={t} onClick={() => setNews(t)}>{t}</button>)}
+              </div>
+              <button className="btn sm" disabled={!news.trim()} onClick={() => { addNews(p.id, news.trim()); setNews(''); }}>Публикувай</button>
+              <ul className="news" style={{ marginTop: 14 }}>
+                {s.news.filter((n) => n.pid === p.id).slice(0, 4).map((n, i) => <li key={i}><span>{n.d}</span>{n.t}</li>)}
+              </ul>
+            </>
+          )}
+        </div>
       </section>
 
       <section className="two" id="apps">
         <div className="card">
-          <h3>Заявки за нови проекти</h3>
-          <ul className="apps">
+          <div className="mk-head"><h3>Заявки за нови проекти</h3><Link className="small" href="/owners">страницата за собственици →</Link></div>
+          <ul className="ad-apps">
             {s.apps.map((a) => (
-              <li key={a.id}>
+              <li key={a.id} className={a.status}>
+                <img src={still(a.cat, STILLS[a.cat] - 1)} alt="" />
                 <div className="grow">
-                  <b>{getC(a.cat).icon} {a.name}</b>
-                  <span className="muted small">{a.company} · {a.loc} · {eur(a.amount)} · {a.ret}% · токен {eur(a.price)}</span>
+                  <b>{a.name}</b>
+                  <span className="muted">{getC(a.cat).icon} {a.company} · {a.loc}</span>
+                  <span className="ad-app-nums">{eur(a.amount)} · {a.ret}% · токен {eur(a.price)}</span>
                 </div>
-                {a.status === 'new' ? (
-                  <>
-                    <button className="btn ghost" onClick={() => rejectApp(a.id)}>Откажи</button>
-                    <button className="btn sm" onClick={() => approveApp(a.id)}>Одобри и обяви</button>
-                  </>
-                ) : a.status === 'approved' ? (
-                  <Link className="tag ok" href={'/project/' + a.pid}>обявен · отвори →</Link>
-                ) : (
-                  <span className="tag warn">отказан</span>
-                )}
+                <div className="ad-app-act">
+                  {a.status === 'new' ? (
+                    <>
+                      <button className="btn sm" onClick={() => approveApp(a.id)}>Одобри и обяви</button>
+                      <button className="btn ghost" onClick={() => rejectApp(a.id)}>Откажи</button>
+                    </>
+                  ) : a.status === 'approved' ? (
+                    <Link className="tag ok" href={'/project/' + a.pid}>обявен · отвори →</Link>
+                  ) : (
+                    <span className="tag warn">отказан</span>
+                  )}
+                </div>
               </li>
             ))}
             {!s.apps.length && <li className="muted">Няма заявки.</li>}
           </ul>
-          <p className="muted small">Одобрената заявка става проект в каталога със собствена страница, визуализация и пазар. Нови заявки идват от страницата <Link href="/owners">„За собственици“</Link>.</p>
         </div>
         <div className="card">
-          <h3>Набрани средства по секции</h3>
-          <div className="hbars">
-            {CATS.map((c) => {
-              const ps2 = PROJECTS.filter((x) => x.cat === c.slug);
-              const got = ps2.reduce((a, x) => a + s.proj[x.id].sold * x.price, 0), goal = ps2.reduce((a, x) => a + target(x), 0);
-              return (
-                <div key={c.slug}>
-                  <span>{c.icon} {c.name}</span>
-                  <div className="bar"><i style={{ width: (got / goal) * 100 + '%' }} /></div>
-                  <b>{eur(got)}</b>
+          <h3>Приходи по проекти</h3>
+          <div className="ad-rev">
+            {revs.map(({ x, r }) => (
+              <div key={x.id}>
+                <span>{getC(x.cat).icon} {x.name}</span>
+                <div className="ad-rev-bar">
+                  <i className="a" style={{ width: (r.raise / maxRev) * 100 + '%' }} />
+                  <i className="b" style={{ width: (r.success / maxRev) * 100 + '%' }} />
+                  <i className="c" style={{ width: (r.trade / maxRev) * 100 + '%' }} />
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <ProjectPicker pid={p.id} setPid={setPid} />
-
-      <section className="two">
-        <div className="card">
-          <h3>Етап · {p.name}</h3>
-          <div className="stages">
-            {p.stages.map((st, i) => (
-              <button key={st.k} className={i === ps.stage ? 'on' : ''} onClick={() => (i === 1 && ps.stage === 0 ? complete(p.id) : setStage(p.id, i))}>
-                <b>{i + 1}</b> {st.k}
-              </button>
+                <b>{eur(r.total)}</b>
+              </div>
             ))}
           </div>
-          <p className="muted small">Смяната на етапа сменя кадъра на проекта и ориентировъчната стойност на токена (сега {eur(fairValue(p, ps))}).</p>
-          <label>{p.unit}: <b>{ps.prog}</b> / {p.N}</label>
-          <input type="range" min="0" max={p.N} value={ps.prog} disabled={ps.stage !== L} onChange={(e) => setProg(p.id, +e.target.value)} />
-          {ps.stage !== L && <p className="muted small">Активно на последния етап: „{p.stages[L].k}“.</p>}
-        </div>
-        <div className="card">
-          <h3>Траншове от ескроу</h3>
-          <table className="tbl full">
-            <tbody>
-              {p.tr.map((t, i) =>
-                t ? (
-                  <tr key={i}>
-                    <td>Транш {i + 1} · {p.stages[i + 1].short}</td>
-                    <td>{t}% · {eur((target(p) * t) / 100)}</td>
-                    <td className="right">
-                      {ps.released[i] ? <span className="tag ok">освободен</span> : <button className="btn sm" disabled={ps.stage < i + 1} onClick={() => release(p.id, i)}>Освободи</button>}
-                    </td>
-                  </tr>
-                ) : null
-              )}
-            </tbody>
-          </table>
-          <p className="muted small">В ескроу сметката: {eur(escrow)}. Транш се освобождава само след достигнат етап и независима проверка.</p>
+          <div className="legend">
+            <span><i style={{ background: 'var(--gold)' }} /> 4% при набиране</span>
+            <span><i style={{ background: '#4fd39a' }} /> успех / управление</span>
+            <span><i style={{ background: 'var(--blue)' }} /> 1% от пазара</span>
+          </div>
+          <p className="muted small">Таксите са примерен модел, а не пазарни данни.</p>
         </div>
       </section>
 
-      <section className="two">
-        <div className="card">
-          <h3>Инвеститори</h3>
-          <table className="tbl full">
-            <thead><tr><th>Име</th><th>Вложени</th><th>KYC</th><th /></tr></thead>
-            <tbody>
-              {s.investors.map((x, i) => (
-                <tr key={x.n}>
-                  <td>{x.n}</td>
-                  <td>{eur(x.sum)}</td>
-                  <td><span className={'tag ' + (x.kyc ? 'ok' : 'warn')}>{x.kyc ? 'потвърден' : 'чака проверка'}</span></td>
-                  <td className="right">{!x.kyc && <button className="btn sm" onClick={() => approveKyc(i)}>Одобри</button>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="card">
-          <h3>Приходи от проекта</h3>
-          <table className="tbl">
-            <tbody>
-              <tr><td>4% такса при успешно набиране</td><td>{eur(rev.raise)}</td></tr>
-              <tr><td>{p.type === 'exit' ? '10% от печалбата на проекта' : '1% годишна такса за управление'}</td><td>{eur(rev.success)}</td></tr>
-              <tr><td>1% от сделките на вторичния пазар</td><td>{eur(rev.trade)}</td></tr>
-              <tr className="hl"><td>Общо</td><td>{eur(rev.total)}</td></tr>
-            </tbody>
-          </table>
-          <p className="muted small">Таксите са примерен модел, а не пазарни данни.</p>
-          <h3 style={{ marginTop: 22 }}>Публикувай новина за проекта</h3>
-          <textarea rows="3" value={news} onChange={(e) => setNews(e.target.value)} placeholder="Напр. Достигнат е следващият етап." />
-          <button className="btn sm" disabled={!news.trim()} onClick={() => { addNews(p.id, news.trim()); setNews(''); }}>Публикувай</button>
+      <section className="card" id="kyc">
+        <h3>Инвеститори</h3>
+        <div className="ad-inv">
+          <div className="ad-person me"><span className="pr-avatar sm">ДИ</span><div className="grow"><b>Демо Инвеститор (ти)</b><span className="muted">{eur(s.cash)} свободни</span></div><span className="tag ok">потвърден</span></div>
+          {s.investors.map((x, i) => (
+            <div key={x.n} className="ad-person">
+              <span className="pr-avatar sm">{x.n.split(' ').map((w) => w[0]).join('')}</span>
+              <div className="grow"><b>{x.n}</b><span className="muted">вложени {eur(x.sum)}</span></div>
+              {x.kyc ? <span className="tag ok">потвърден</span> : <button className="btn sm" onClick={() => approveKyc(i)}>Одобри KYC</button>}
+            </div>
+          ))}
         </div>
       </section>
     </>
