@@ -38,9 +38,7 @@ export default function Sector() {
           <p className="muted small">Диапазоните са илюстрация за демото, а не пазарни данни или обещание.</p>
         </div>
         <div className="hero-3d">
-          <StageView key={feat.id} p={feat} auto height={460}>
-            <Link href={'/project/' + feat.id} className="stage-chip">{feat.name} · отвори проекта →</Link>
-          </StageView>
+          <StageView key={feat.id} p={feat} auto height={460} badge={<Link href={'/project/' + feat.id} className="sv-badge">{feat.name} · отвори →</Link>} />
         </div>
       </section>
 

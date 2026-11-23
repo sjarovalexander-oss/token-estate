@@ -430,3 +430,6 @@ html, body { overflow-x: clip; }
   .sv-strip span { font-size: 8px; padding: 6px 2px 2px; }
   .sv-strip button { border-radius: 8px; border-width: 1px; }
 }
+.sv-strip { grid-auto-columns: minmax(0, 128px); justify-content: start; }
+a.sv-badge:hover { text-decoration: none; border-color: var(--gold); }
+@media (max-width: 640px) { .sv-strip { grid-auto-columns: minmax(0, 1fr); } }
