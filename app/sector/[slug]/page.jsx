@@ -2,7 +2,8 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Film } from '../../../components/Film';
+import { Film, Story } from '../../../components/Film';
+import { STORY } from '../../../lib/story';
 import ProjectCard from '../../../components/ProjectCard';
 import { CATS, PROJECTS, getC, last } from '../../../lib/data';
 
@@ -22,11 +23,12 @@ export default function Sector() {
         ))}
       </nav>
 
-      <Film name={c.slug} height="190vh" key={c.slug}>
+<section className="story-intro">
         <div className="eyebrow">{c.icon} Секция</div>
         <h1>{c.name}</h1>
-        <p className="lead">{c.lead}</p>
-      </Film>
+        <p className="lead" style={{ margin: '0 auto' }}>{c.lead}</p>
+      </section>
+      <Story key={c.slug} name={c.slug} chapters={STORY[c.slug]} label="скролни и виж как се развива един проект" />
 
       <section className="hero">
         <div className="hero-txt">

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useStore } from './providers';
 import ProjectCard from '../components/ProjectCard';
 import { Reveal, Count } from '../components/Bits';
-import { Film, LoopVideo } from '../components/Film';
+import { Film, LoopVideo, Story } from '../components/Film';
+import { STORY } from '../lib/story';
 import { CATS, PROJECTS, PROFILES, DEPOSIT, annual, eur, last } from '../lib/data';
 
 const Scene3D = dynamic(() => import('../components/Scene3D'), { ssr: false });
@@ -98,6 +99,13 @@ export default function Home() {
           <div key={n} className="card step"><b>{n}</b><h3>{t}</h3><p className="muted small">{d}</p></div>
         ))}
       </Reveal>
+
+      <section className="story-intro">
+        <div className="eyebrow">От празен парцел до изплащане</div>
+        <h2>Виж как расте един проект</h2>
+        <p className="muted">Скролни надолу. Всеки етап отключва транш към строителя и вдига стойността на токена.</p>
+      </section>
+      <Story name="stroitelstvo" chapters={STORY.stroitelstvo} />
 
       <nav className="chips" id="sections">
         {CATS.map((c) => (

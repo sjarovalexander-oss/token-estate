@@ -349,3 +349,35 @@ html, body { overflow-x: clip; }
   .vbanner { height: 34vh; }
 }
 .film .btn { flex: none; }
+
+/* --- скрол филм на глави --- */
+.story-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 11, 18, .55) 0%, transparent 22%, transparent 55%, rgba(8, 11, 18, .92) 100%); }
+.story-label { position: absolute; top: 96px; left: 0; right: 0; text-align: center; font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold2); font-weight: 700; text-shadow: 0 2px 12px #000; }
+.chap { position: absolute; bottom: 150px; display: flex; align-items: flex-end; gap: 22px; max-width: min(720px, 86vw); will-change: opacity, transform; }
+.chap.left { left: max(22px, calc(50vw - 600px)); }
+.chap.right { right: max(22px, calc(50vw - 600px)); flex-direction: row-reverse; text-align: right; }
+.chap .num { font-family: 'Playfair Display', serif; font-weight: 700; font-size: clamp(110px, 17vw, 250px); line-height: .78; color: rgba(255, 255, 255, .92); text-shadow: 0 10px 60px rgba(0, 0, 0, .55); letter-spacing: -.04em; }
+.chap-txt { padding-bottom: 10px; }
+.chap-txt em { font-style: normal; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold2); font-weight: 700; }
+.chap-txt h2 { font-size: clamp(26px, 3.4vw, 46px); margin: 6px 0 8px; text-shadow: 0 4px 30px rgba(0, 0, 0, .7); font-style: italic; }
+.chap-txt p { margin: 0; font-size: 17px; color: #eef1f7; max-width: 400px; text-shadow: 0 2px 14px rgba(0, 0, 0, .85); }
+.chap.right .chap-txt p { margin-left: auto; }
+.rail { position: absolute; left: max(22px, calc(50vw - 600px)); right: max(22px, calc(50vw - 600px)); bottom: 44px; }
+.rail-line { height: 2px; background: rgba(255, 255, 255, .18); border-radius: 2px; overflow: hidden; }
+.rail-line i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #9c7a35, var(--gold2)); }
+.rail-ticks { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: rgba(255, 255, 255, .45); gap: 10px; }
+.rail-ticks span { transition: color .4s; }
+.rail-ticks span.on { color: #fff; }
+.rail-ticks b { color: var(--gold2); margin-right: 6px; font-weight: 700; }
+.story + * { margin-top: 10px; }
+.story-intro { text-align: center; padding: 30px 0 0; }
+.story-intro h2 { font-size: clamp(28px, 3.6vw, 46px); margin: 6px 0; }
+@media (max-width: 900px) {
+  .chap { bottom: 120px; gap: 12px; flex-direction: column !important; align-items: flex-start; text-align: left !important; left: 16px !important; right: 16px !important; }
+  .chap .num { font-size: 96px; }
+  .chap-txt p { font-size: 15px; margin-left: 0 !important; }
+  .rail { left: 16px; right: 16px; bottom: 26px; }
+  .rail-ticks span { font-size: 0; }
+  .rail-ticks b { font-size: 11px; }
+  .story-label { top: 120px; }
+}
