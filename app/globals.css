@@ -433,3 +433,4 @@ html, body { overflow-x: clip; }
 .sv-strip { grid-auto-columns: minmax(0, 128px); justify-content: start; }
 a.sv-badge:hover { text-decoration: none; border-color: var(--gold); }
 @media (max-width: 640px) { .sv-strip { grid-auto-columns: minmax(0, 1fr); } }
+.film:not(.story) .film-shade { opacity: max(.22, calc(1 - var(--p, 0) * 3)); }
