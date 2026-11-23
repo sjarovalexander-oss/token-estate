@@ -1,149 +1,75 @@
 'use client';
-import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from './providers';
-import ProjectCard from '../components/ProjectCard';
 import { Reveal, Count } from '../components/Bits';
-import { Film, LoopVideo, Story } from '../components/Film';
-import { STORY } from '../lib/story';
-import { CATS, PROJECTS, PROFILES, DEPOSIT, annual, eur, last } from '../lib/data';
-
-const Scene3D = dynamic(() => import('../components/Scene3D'), { ssr: false });
+import { Film } from '../components/Film';
+import { CATS, PROJECTS, PROFILES, DEPOSIT, annual, eur, retLabel } from '../lib/data';
 
 export default function Home() {
-  const { s, tick } = useStore();
-  const [ci, setCi] = useState(0);
-  const [auto, setAuto] = useState(true);
-  const cat = CATS[ci];
-  const feat = PROJECTS.find((p) => p.cat === cat.slug);
-
-  useEffect(() => {
-    if (!auto) return;
-    const i = setInterval(() => setCi((x) => (x + 1) % CATS.length), 7000);
-    return () => clearInterval(i);
-  }, [auto]);
-
-  // продажби на живо в случаен проект + лента с активност
-  const [feed, setFeed] = useState([]);
+  const { s } = useStore();
   const [faq, setFaq] = useState(0);
   const [amt, setAmt] = useState(10000);
-  useEffect(() => {
-    const i = setInterval(() => {
-      const p = PROJECTS[Math.floor(Math.random() * PROJECTS.length)];
-      if (Math.random() < 0.6) {
-        tick(p.id);
-        setFeed((f) => [{ id: Date.now(), t: 'Инвеститор #' + (100 + Math.floor(Math.random() * 900)) + ' купи токен от „' + p.name.replace(/[„“]/g, '') + '“ за ' + eur(p.price) }, ...f].slice(0, 4));
-      }
-    }, 3000);
-    return () => clearInterval(i);
-  }, [tick]);
+  const raised = PROJECTS.reduce((a, p) => a + s.proj[p.id].sold * p.price, 0);
+  const goal = PROJECTS.reduce((a, p) => a + p.tokens * p.price, 0);
   const rateOf = (pr) => {
     let w = 0, r = 0;
     CATS.forEach((c) => { const p = PROJECTS.find((x) => x.cat === c.slug); const k = pr.w[c.slug] || 0; w += k; r += k * annual(p); });
     return r / w;
   };
 
-  const raised = PROJECTS.reduce((a, p) => a + s.proj[p.id].sold * p.price, 0);
-  const goal = PROJECTS.reduce((a, p) => a + p.tokens * p.price, 0);
-
   return (
     <>
-      <Film name="home">
+      <Film name="home" height="180vh">
         <div className="eyebrow">Платформа за токенизация на реални активи</div>
         <h1>Инвестирай на части в сгради, енергия, хотели и земя</h1>
         <p className="lead">Реални проекти, разделени на токени от <b>500 €</b>. Избираш секция, следиш проекта на живо и получаваш своя дял от дохода.</p>
         <div className="row">
-          <a className="btn" href="#sections">Разгледай секциите</a>
+          <a className="btn" href="#sections">Виж шестте секции</a>
           <Link className="btn ghost lg" href="/portfolio">Сглоби портфейл</Link>
         </div>
       </Film>
 
-      <section className="hero">
-        <div className="hero-txt">
-          <div className="eyebrow">Шест секции · шест живи 3D модела</div>
-          <h2 className="h1s">Всеки проект се вижда, преди да вложиш</h2>
-          <p className="lead">
-            Различен риск, срок и начин на изплащане. Купуваш токени от <b>500 €</b> и можеш да ги продадеш на вторичния пазар.
-          </p>
-          <div className="kpis three">
-            <div className="card kpi"><span>Проекти</span><b><Count to={PROJECTS.length} /> <small>в {CATS.length} секции</small></b></div>
-            <div className="card kpi"><span>Набрани досега</span><b className="gold"><Count to={raised} fmt={eur} /></b></div>
-            <div className="card kpi"><span>Обща цел</span><b><Count to={goal} fmt={eur} /></b></div>
-          </div>
-          <div className="row">
-            <a className="btn" href="#sections">Разгледай секциите</a>
-            <Link className="btn ghost lg" href="/portfolio">Сглоби портфейл</Link>
-          </div>
-        </div>
-        <div className="hero-3d">
-          <Scene3D key={feat.scene} type={feat.scene} stage={last(feat)} frac={0.6} height={520} />
-          <div className="chips over">
-            {CATS.map((c, i) => (
-              <button key={c.slug} className={i === ci ? 'on' : ''} onClick={() => { setCi(i); setAuto(false); }}>
-                {c.icon} {c.name}
-              </button>
-            ))}
-          </div>
-          <Link href={'/project/' + feat.id} className="stage-chip">{feat.name} · отвори проекта →</Link>
+      <section className="story-intro" id="sections">
+        <div className="eyebrow">Шест секции · шест филма</div>
+        <h2>Избери секция и виж как се развива един проект</h2>
+        <p className="muted">Всяка секция се отваря на отделна страница със собствен филм, който се движи със скрола.</p>
+        <div className="kpis three" style={{ maxWidth: 760, margin: '18px auto 0' }}>
+          <div className="card kpi"><span>Проекти</span><b><Count to={PROJECTS.length} /></b></div>
+          <div className="card kpi"><span>Набрани досега</span><b className="gold"><Count to={raised} fmt={eur} /></b></div>
+          <div className="card kpi"><span>Обща цел</span><b><Count to={goal} fmt={eur} /></b></div>
         </div>
       </section>
 
-      <div className="ticker">
-        <span className="live">● НА ЖИВО</span>
-        {feed.length ? feed.map((f) => <span key={f.id} className="tk">{f.t}</span>) : <span className="tk muted">Изчакване на следващата покупка…</span>}
-      </div>
+      <section className="secgrid">
+        {CATS.map((c, i) => {
+          const list = PROJECTS.filter((p) => p.cat === c.slug);
+          const p = list[0], ps = s.proj[p.id];
+          return (
+            <Link key={c.slug} href={'/sector/' + c.slug} className="seccard">
+              <img src={`/video/${c.slug}.jpg`} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = 'none')} />
+              <div className="sec-shade" />
+              <span className="sec-num">{String(i + 1).padStart(2, '0')}</span>
+              <div className="sec-body">
+                <div className="eyebrow">{c.icon} {list.length} {list.length === 1 ? 'проект' : 'проекта'} · {c.term}</div>
+                <h3>{c.name}</h3>
+                <p>{c.lead}</p>
+                <div className="sec-foot">
+                  <span>{p.name} · <b className="gold">{retLabel(p)}</b></span>
+                  <span>{Math.round((ps.sold / p.tokens) * 100)}% набрани</span>
+                </div>
+                <span className="btn sm">Виж филма и проекта →</span>
+              </div>
+            </Link>
+          );
+        })}
+      </section>
 
       <Reveal className="kpis">
         {[['1', 'Избираш проект', 'Шест секции с различен риск, срок и начин на изплащане.'], ['2', 'Купуваш токени', 'От 500 €. Парите стоят в ескроу сметка до успешно набиране.'], ['3', 'Следиш на живо', '3D модел, етапи, отчети и плащания в профила ти.'], ['4', 'Получаваш доход', 'На тримесечие или накрая. Можеш да продадеш на вторичния пазар.']].map(([n, t, d]) => (
           <div key={n} className="card step"><b>{n}</b><h3>{t}</h3><p className="muted small">{d}</p></div>
         ))}
       </Reveal>
-
-      <section className="story-intro">
-        <div className="eyebrow">От празен парцел до изплащане</div>
-        <h2>Виж как расте един проект</h2>
-        <p className="muted">Скролни надолу. Всеки етап отключва транш към строителя и вдига стойността на токена.</p>
-      </section>
-      <Story name="stroitelstvo" chapters={STORY.stroitelstvo} />
-
-      <nav className="chips" id="sections">
-        {CATS.map((c) => (
-          <a key={c.slug} href={'#' + c.slug}>{c.icon} {c.name}</a>
-        ))}
-      </nav>
-
-      {CATS.map((c) => (
-        <Reveal key={c.slug} id={c.slug} className="sector">
-          <div className="sector-head card hasvid">
-            <LoopVideo name={c.slug} />
-            <div className="sector-icon">{c.icon}</div>
-            <div className="grow">
-              <h2>{c.name}</h2>
-              <p className="muted">{c.lead}</p>
-              <div className="pills">
-                <span>Срок: <b>{c.term}</b></span>
-                <span>Доходност: <b>{c.ret}</b></span>
-                <span>{c.income.split('.')[0]}</span>
-              </div>
-            </div>
-            <Link className="btn ghost" href={'/sector/' + c.slug}>Към секцията →</Link>
-          </div>
-          <div className="cards">
-            {PROJECTS.filter((p) => p.cat === c.slug).map((p) => (
-              <ProjectCard key={p.id} p={p} />
-            ))}
-            <div className="pcard soon">
-              <div className="pc-body">
-                <div className="eyebrow">Скоро</div>
-                <h3>Следващ проект в „{c.name}“</h3>
-                <p className="muted small">Всеки проект минава проверка на документите, бюджета и партньора, преди да бъде обявен.</p>
-                <Link className="btn ghost" href={'/owners?cat=' + c.slug}>Предложи проект</Link>
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      ))}
 
       <Reveal className="two">
         <div className="card">
@@ -165,7 +91,7 @@ export default function Home() {
           <p className="muted">Набери до 5 000 000 € от много инвеститори. Плащаш такса само при успешно набиране, а парите получаваш на траншове.</p>
           <ul className="checks">
             <li>Без да даваш дял от фирмата си.</li>
-            <li>Собствена страница с 3D модел на проекта.</li>
+            <li>Собствена страница с филм и 3D модел на проекта.</li>
             <li>Готови инвеститори и вторичен пазар.</li>
           </ul>
           <Link className="btn sm" href="/owners">Подай заявка →</Link>
@@ -190,19 +116,6 @@ export default function Home() {
           ))}
         </div>
       </Reveal>
-
-      <section className="card">
-        <h3>Новини от проектите</h3>
-        <ul className="news">
-          {s.news.slice(0, 8).map((n, i) => (
-            <li key={i}>
-              <span>{n.d}</span>
-              <span className="grow"><b>{PROJECTS.find((p) => p.id === n.pid)?.name}:</b> {n.t}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="muted small">Диапазоните за срок и доходност по секции са илюстрация, а не пазарни данни или обещание.</p>
-      </section>
     </>
   );
 }

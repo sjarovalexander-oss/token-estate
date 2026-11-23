@@ -17,22 +17,19 @@ export default function Sector() {
   const feat = list[0];
   return (
     <>
-      <nav className="chips">
+
+
+<Story key={c.slug} name={c.slug} chapters={STORY[c.slug]} label={c.icon + ' ' + c.name + ' · скролни надолу'} />
+
+      <nav className="chips" style={{ marginTop: 18 }}>
         {CATS.map((x) => (
           <Link key={x.slug} href={'/sector/' + x.slug} className={x.slug === c.slug ? 'on' : ''}>{x.icon} {x.name}</Link>
         ))}
       </nav>
 
-<section className="story-intro">
-        <div className="eyebrow">{c.icon} Секция</div>
-        <h1>{c.name}</h1>
-        <p className="lead" style={{ margin: '0 auto' }}>{c.lead}</p>
-      </section>
-      <Story key={c.slug} name={c.slug} chapters={STORY[c.slug]} label="скролни и виж как се развива един проект" />
-
       <section className="hero">
         <div className="hero-txt">
-          <div className="eyebrow">Числата на секцията</div>
+          <div className="eyebrow">{c.icon} {c.name}</div>
           <h2 className="h1s">{c.income.split('.')[0]}.</h2>
           <div className="kpis three">
             <div className="card kpi"><span>Типичен срок</span><b>{c.term}</b></div>

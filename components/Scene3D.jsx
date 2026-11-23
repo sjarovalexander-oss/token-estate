@@ -301,15 +301,18 @@ export default function Scene3D({ type = 'newbuild', stage = 0, frac = 0, height
     b.update(st.current.stage, st.current.frac);
     R.current = b;
 
-    let raf;
+    let raf, visible = true;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting), { threshold: 0.01 });
+    io.observe(box0);
     const t0 = performance.now();
     const loop = () => {
+      raf = requestAnimationFrame(loop);
+      if (!visible || document.hidden) return;
       const t = (performance.now() - t0) / 1000;
       G.opacity = 0.22 + Math.sin(t * 2) * 0.07;
       b.tick && b.tick(t);
       ctl.update();
       renderer.render(scene, cam);
-      raf = requestAnimationFrame(loop);
     };
     loop();
     const onR = () => {
@@ -320,6 +323,7 @@ export default function Scene3D({ type = 'newbuild', stage = 0, frac = 0, height
     window.addEventListener('resize', onR);
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       window.removeEventListener('resize', onR);
       ctl.dispose();
       renderer.dispose();

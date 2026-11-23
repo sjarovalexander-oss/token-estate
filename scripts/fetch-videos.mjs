@@ -1,7 +1,7 @@
 // Сваля видеата от Higgsfield при build и ги прекодира за плавно превъртане със скрол.
 // Филмът на всяка секция е слепен от няколко прехода между етапите.
 // Готовите файлове се пазят в .next/cache/video, за да не се свалят при всеки build.
-import { existsSync, mkdirSync, copyFileSync, writeFileSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, copyFileSync, writeFileSync, rmSync, statSync } from 'fs';
 import { execFileSync } from 'child_process';
 import { createHash } from 'crypto';
 import ffmpeg from 'ffmpeg-static';
@@ -22,7 +22,7 @@ mkdirSync(CACHE, { recursive: true });
 const ff = (args) => execFileSync(ffmpeg, ['-y', '-loglevel', 'error', ...args]);
 const done = [];
 for (const [name, files] of Object.entries(VIDEOS)) {
-  const key = name + '-' + createHash('md5').update('v3' + files.join()).digest('hex').slice(0, 10);
+  const key = name + '-' + createHash('md5').update('v4' + files.join()).digest('hex').slice(0, 10);
   const cm = `${CACHE}/${key}.mp4`, cj = `${CACHE}/${key}.jpg`, cs = `${CACHE}/${key}-start.jpg`, cl = `${CACHE}/${key}-loop.mp4`;
   try {
     if (!existsSync(cm) || !existsSync(cj) || !existsSync(cs) || !existsSync(cl)) {
@@ -36,7 +36,7 @@ for (const [name, files] of Object.entries(VIDEOS)) {
       }
       const inputs = parts.flatMap((p) => ['-i', p]);
       const chain = parts.map((_, i) => `[${i}:v]scale=1280:720,fps=24,setsar=1[v${i}]`).join(';') + ';' + parts.map((_, i) => `[v${i}]`).join('') + `concat=n=${parts.length}:v=1:a=0[out]`;
-      ff([...inputs, '-filter_complex', chain, '-map', '[out]', '-an', '-c:v', 'libx264', '-preset', 'medium', '-crf', '30', '-g', '8', '-bf', '0', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', cm]);
+      ff([...inputs, '-filter_complex', chain, '-map', '[out]', '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '32', '-g', '10', '-bf', '0', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', cm]);
       ff(['-sseof', '-0.3', '-i', cm, '-frames:v', '1', '-q:v', '4', cj]);
       ff(['-i', cm, '-frames:v', '1', '-q:v', '4', cs]);
       // малка версия за фоновете, които се въртят сами
@@ -48,7 +48,7 @@ for (const [name, files] of Object.entries(VIDEOS)) {
     copyFileSync(cs, `${OUT}/${name}-start.jpg`);
     copyFileSync(cl, `${OUT}/${name}-loop.mp4`);
     done.push(name);
-    console.log('video ok:', name, `(${files.length} части)`);
+    console.log('video ok:', name, `(${files.length} части, ${(statSync(cm).size / 1e6).toFixed(1)} MB)`);
   } catch (e) {
     console.warn('video skipped:', name, '-', e.message);
   }

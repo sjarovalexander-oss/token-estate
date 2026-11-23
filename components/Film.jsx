@@ -1,32 +1,32 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 
-// Зарежда целия видео файл в паметта, за да е мигновено превъртането при скрол
-function useBlobVideo(name, setOk, wrap) {
-  const [src, setSrc] = useState(null);
+// Показва колко от филма е заредено и отключва превъртането на телефони
+function useScrubVideo(vid) {
+  const [pct, setPct] = useState(0);
   useEffect(() => {
-    let url, dead = false, started = false;
-    const load = () => {
-      if (started) return;
-      started = true;
-      fetch(`/video/${name}.mp4`)
-        .then((r) => (r.ok ? r.blob() : Promise.reject()))
-        .then((b) => { if (!dead) { url = URL.createObjectURL(b); setSrc(url); } })
-        .catch(() => !dead && setOk(false));
+    const v = vid.current;
+    if (!v) return;
+    const upd = () => {
+      if (!v.duration || !v.buffered.length) return;
+      let end = 0;
+      for (let i = 0; i < v.buffered.length; i++) end = Math.max(end, v.buffered.end(i));
+      setPct(Math.min(100, Math.round((end / v.duration) * 100)));
     };
-    // тегли се чак когато филмът наближи екрана, за да не бави останалата страница
-    const io = new IntersectionObserver(([e]) => e.isIntersecting && (load(), io.disconnect()), { rootMargin: '120% 0px' });
-    if (wrap.current) io.observe(wrap.current); else load();
-    return () => { dead = true; io.disconnect(); if (url) URL.revokeObjectURL(url); };
-  }, [name, setOk, wrap]);
-  return src;
+    const unlock = () => { const p = v.play(); if (p && p.then) p.then(() => v.pause()).catch(() => {}); };
+    ['progress', 'loadeddata', 'canplaythrough'].forEach((e) => v.addEventListener(e, upd));
+    window.addEventListener('touchstart', unlock, { once: true, passive: true });
+    const t = setInterval(upd, 700);
+    return () => { clearInterval(t); window.removeEventListener('touchstart', unlock); };
+  }, [vid]);
+  return pct;
 }
 
 // Видео на цял екран, което се превърта със скролването
 export function Film({ name, height = '210vh', children }) {
   const wrap = useRef(null), vid = useRef(null);
   const [ok, setOk] = useState(true);
-  const src = useBlobVideo(name, setOk, wrap);
+  const pct = useScrubVideo(vid);
   useEffect(() => {
     let raf, cur = 0;
     const loop = () => {
@@ -35,7 +35,7 @@ export function Film({ name, height = '210vh', children }) {
         const r = w.getBoundingClientRect();
         const p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - window.innerHeight)));
         w.style.setProperty('--p', p.toFixed(4));
-        if (v && v.duration && r.bottom > 0) {
+        if (v && v.duration && r.bottom > 0 && r.top < window.innerHeight) {
           cur += (p * (v.duration - 0.08) - cur) * 0.16;
           if (!v.seeking && Math.abs(v.currentTime - cur) > 0.02) v.currentTime = cur;
         }
@@ -48,8 +48,9 @@ export function Film({ name, height = '210vh', children }) {
   return (
     <section ref={wrap} className={'film' + (ok ? '' : ' novid')} style={{ height }}>
       <div className="film-sticky">
-        {ok && <video ref={vid} src={src || undefined} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" />}
+        {ok && <video ref={vid} src={`/video/${name}.mp4`} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" onError={() => setOk(false)} />}
         <div className="film-shade" />
+        {ok && pct < 98 && <div className="film-load">зарежда се {pct}%</div>}
         <div className="film-txt">{children}</div>
         <div className="film-hint">скролни надолу<i /></div>
       </div>
@@ -77,7 +78,7 @@ export function Story({ name, chapters, label }) {
   const wrap = useRef(null), vid = useRef(null), els = useRef([]), fill = useRef(null);
   const [ok, setOk] = useState(true);
   const [act, setAct] = useState(0);
-  const src = useBlobVideo(name, setOk, wrap);
+  const pct = useScrubVideo(vid);
   const n = chapters.length;
   useEffect(() => {
     let raf, cur = 0, last = -1;
@@ -113,8 +114,9 @@ export function Story({ name, chapters, label }) {
   return (
     <section ref={wrap} className={'film story' + (ok ? '' : ' novid')} style={{ height: n * 105 + 'vh' }}>
       <div className="film-sticky">
-        {ok && <video ref={vid} src={src || undefined} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" />}
+        {ok && <video ref={vid} src={`/video/${name}.mp4`} poster={`/video/${name}-start.jpg`} muted playsInline preload="auto" onError={() => setOk(false)} />}
         <div className="story-shade" />
+        {ok && pct < 98 && <div className="film-load">зарежда се {pct}%</div>}
         {label && <div className="story-label">{label}</div>}
         {chapters.map((c, k) => (
           <div key={c.t} ref={(el) => (els.current[k] = el)} className={'chap ' + (k % 2 ? 'right' : 'left')}>
