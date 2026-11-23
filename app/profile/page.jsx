@@ -1,21 +1,26 @@
 'use client';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useStore } from '../providers';
-import { P, STAGES, fairValue, eur } from '../../lib/data';
+import { PROJECTS, getP, getC, fairValue, paidPer, totalPer, eur } from '../../lib/data';
 
-const Building3D = dynamic(() => import('../../components/Building3D'), { ssr: false });
+const Scene3D = dynamic(() => import('../../components/Scene3D'), { ssr: false });
 
 export default function Profile() {
   const { s } = useStore();
-  const fair = fairValue(s);
-  const buys = s.tx.filter((t) => t.t.startsWith('Покупка'));
-  const bq = buys.reduce((a, t) => a + t.qty, 0);
-  const avg = bq ? buys.reduce((a, t) => a + t.qty * t.price, 0) / bq : 0;
-  const value = s.mine * fair;
-  const cost = s.mine * avg;
-  const paidShare = s.stage === 5 ? s.aptsSold / P.apts : 0;
-  const paid = s.mine * P.payout * paidShare;
+  const rows = PROJECTS.filter((p) => s.proj[p.id].mine > 0).map((p) => {
+    const ps = s.proj[p.id];
+    const buys = s.tx.filter((t) => t.pid === p.id && t.t.startsWith('Покупка'));
+    const bq = buys.reduce((a, t) => a + t.qty, 0);
+    const avg = bq ? buys.reduce((a, t) => a + t.qty * t.price, 0) / bq : p.price;
+    return { p, ps, avg, fair: fairValue(p, ps), value: ps.mine * fairValue(p, ps), cost: ps.mine * avg, paid: ps.mine * paidPer(p, ps), exp: ps.mine * totalPer(p) };
+  });
+  const sum = (k) => rows.reduce((a, r) => a + r[k], 0);
+  const [sel, setSel] = useState(null);
+  const cur = rows.find((r) => r.p.id === sel) || rows[0];
+  const bySector = {};
+  rows.forEach((r) => (bySector[r.p.cat] = (bySector[r.p.cat] || 0) + r.value));
 
   return (
     <>
@@ -25,61 +30,89 @@ export default function Profile() {
           <h1>Здравей, Демо Инвеститор</h1>
           <p className="muted">Самоличност: <span className="tag ok">потвърдена (KYC)</span> · Тип: непрофесионален инвеститор</p>
         </div>
-        <div className="card kpi">
-          <span>Свободни средства</span>
-          <b>{eur(s.cash)}</b>
-        </div>
+        <div className="card kpi"><span>Свободни средства</span><b>{eur(s.cash)}</b></div>
       </section>
 
       <section className="kpis">
-        <div className="card kpi"><span>Моите токени</span><b>{s.mine} <small>от {P.tokens}</small></b></div>
-        <div className="card kpi"><span>Текуща стойност</span><b className="gold">{eur(value)}</b></div>
+        <div className="card kpi"><span>Проекти в портфейла</span><b>{rows.length} <small>от {PROJECTS.length}</small></b></div>
+        <div className="card kpi"><span>Текуща стойност</span><b className="gold">{eur(sum('value'))}</b></div>
         <div className="card kpi">
           <span>Спрямо вложеното</span>
-          <b className={value >= cost ? 'green' : 'red'}>{value >= cost ? '+' : ''}{eur(value - cost)}</b>
+          <b className={sum('value') >= sum('cost') ? 'green' : 'red'}>{sum('value') >= sum('cost') ? '+' : ''}{eur(sum('value') - sum('cost'))}</b>
         </div>
-        <div className="card kpi"><span>Очаквано изплащане</span><b>{eur(s.mine * P.payout)}</b></div>
+        <div className="card kpi"><span>Получени плащания</span><b>{eur(sum('paid'))} <small>от {eur(sum('exp'))}</small></b></div>
       </section>
 
-      <section className="two wide-left">
-        <div className="card">
-          <h3>{P.name}</h3>
-          <Building3D stage={s.stage} aptsSold={s.aptsSold} height={400} />
-          <p className="muted small">
-            Етап: {STAGES[s.stage].k}. Всеки продаден апартамент светва като прозорец: {s.aptsSold} от {P.apts}.
-          </p>
-        </div>
-        <div className="card">
-          <h3>Изплащания</h3>
-          <div className="big gold">{eur(paid)}</div>
-          <p className="muted small">изплатени от общо {eur(s.mine * P.payout)}</p>
-          <div className="bar"><i style={{ width: paidShare * 100 + '%' }} /></div>
-          <p className="muted small">
-            Плащанията идват на части след всяка вълна продадени апартаменти. В демото това се управлява от админ панела.
-          </p>
-          <h3 style={{ marginTop: 22 }}>Моят дял</h3>
-          <table className="tbl">
-            <tbody>
-              <tr><td>Средна цена на покупка</td><td>{eur(avg)}</td></tr>
-              <tr><td>Ориентировъчна стойност на токен</td><td>{eur(fair)}</td></tr>
-              <tr><td>Дял от токенизираната част</td><td>{((s.mine / P.tokens) * 100).toFixed(1)}%</td></tr>
-            </tbody>
-          </table>
-          <div className="row">
-            <Link className="btn sm" href="/market">Към вторичния пазар</Link>
-            <button className="btn ghost">Сертификат за дял (PDF)</button>
-          </div>
-        </div>
-      </section>
+      {!rows.length ? (
+        <section className="card center">
+          <h2>Още нямаш токени</h2>
+          <Link className="btn sm" href="/">Разгледай проектите</Link>
+        </section>
+      ) : (
+        <>
+          <section className="card">
+            <h3>Моите инвестиции</h3>
+            <table className="tbl full click">
+              <thead>
+                <tr><th>Проект</th><th>Секция</th><th>Токени</th><th>Средна цена</th><th>Стойност</th><th>Получени</th><th>Очаквани общо</th></tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.p.id} className={cur.p.id === r.p.id ? 'hl' : ''} onClick={() => setSel(r.p.id)}>
+                    <td>{r.p.name}</td>
+                    <td>{getC(r.p.cat).icon} {getC(r.p.cat).name}</td>
+                    <td>{r.ps.mine}</td>
+                    <td>{eur(r.avg)}</td>
+                    <td>{eur(r.value)}</td>
+                    <td>{eur(r.paid)}</td>
+                    <td>{eur(r.exp)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="split">
+              {Object.entries(bySector).map(([k, v]) => (
+                <div key={k} style={{ flex: v }} title={getC(k).name}><span>{getC(k).icon} {Math.round((v / sum('value')) * 100)}%</span></div>
+              ))}
+            </div>
+            <p className="muted small">Разпределение на портфейла по секции. Избери ред, за да видиш проекта отдолу.</p>
+          </section>
+
+          <section className="two wide-left">
+            <div className="card">
+              <h3>{cur.p.name}</h3>
+              <Scene3D key={cur.p.scene} type={cur.p.scene} stage={cur.ps.stage} frac={cur.ps.prog / cur.p.N} height={400} />
+              <p className="muted small">Етап: {cur.p.stages[cur.ps.stage].k}. {cur.p.unit}: {cur.ps.prog} от {cur.p.N}.</p>
+            </div>
+            <div className="card">
+              <h3>Изплащания по проекта</h3>
+              <div className="big gold">{eur(cur.paid)}</div>
+              <p className="muted small">получени от общо очаквани {eur(cur.exp)}</p>
+              <div className="bar"><i style={{ width: (cur.paid / cur.exp) * 100 + '%' }} /></div>
+              <table className="tbl">
+                <tbody>
+                  <tr><td>Токени</td><td>{cur.ps.mine} от {cur.p.tokens}</td></tr>
+                  <tr><td>Ориентировъчна стойност на токен</td><td>{eur(cur.fair)}</td></tr>
+                  <tr><td>Дял от токените на проекта</td><td>{((cur.ps.mine / cur.p.tokens) * 100).toFixed(1)}%</td></tr>
+                </tbody>
+              </table>
+              <div className="row">
+                <Link className="btn sm" href={'/market?p=' + cur.p.id}>Продай на вторичния пазар</Link>
+                <Link className="btn ghost" href={'/project/' + cur.p.id}>Към проекта</Link>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       <section className="two">
         <div className="card">
           <h3>История на операциите</h3>
           <table className="tbl full">
-            <thead><tr><th>Дата</th><th>Операция</th><th>Брой</th><th>Цена</th></tr></thead>
+            <thead><tr><th>Дата</th><th>Проект</th><th>Операция</th><th>Брой</th><th>Цена</th></tr></thead>
             <tbody>
               {s.tx.map((t, i) => (
-                <tr key={i}><td>{t.d}</td><td>{t.t}</td><td>{t.qty}</td><td>{eur(t.price)}</td></tr>
+                <tr key={i}><td>{t.d}</td><td>{getP(t.pid).name}</td><td>{t.t}</td><td>{t.qty}</td><td>{eur(t.price)}</td></tr>
               ))}
             </tbody>
           </table>
@@ -87,7 +120,7 @@ export default function Profile() {
         <div className="card">
           <h3>Документи</h3>
           <ul className="docs">
-            {['Основен информационен документ (KIIS)', 'Договор за инвестиция', 'Разрешение за строеж', 'Независима оценка на бюджета', 'Месечен отчет на строителния надзор'].map((d) => (
+            {['Основен информационен документ (KIIS)', 'Договор за инвестиция', 'Сертификат за дял', 'Независима оценка на проекта', 'Тримесечен отчет'].map((d) => (
               <li key={d}><span>📄</span>{d}<em>демо</em></li>
             ))}
           </ul>

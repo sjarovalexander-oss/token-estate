@@ -5,7 +5,7 @@ import { useStore } from '../app/providers';
 import { eur } from '../lib/data';
 
 const links = [
-  ['/', 'Проектът'],
+  ['/', 'Проекти'],
   ['/market', 'Вторичен пазар'],
   ['/profile', 'Моят профил'],
   ['/admin', 'Админ панел'],
@@ -25,7 +25,7 @@ export default function Nav() {
         </Link>
         <nav>
           {links.map(([h, t]) => (
-            <Link key={h} href={h} className={path === h ? 'on' : ''}>
+            <Link key={h} href={h} className={(h === '/' ? path === '/' || path.startsWith('/project') || path.startsWith('/sector') : path === h) ? 'on' : ''}>
               {t}
             </Link>
           ))}

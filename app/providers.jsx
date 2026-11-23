@@ -1,10 +1,9 @@
 'use client';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { P, fairValue, initState } from '../lib/data';
+import { FEE, getP, fairValue, initState, last, today } from '../lib/data';
 
 const Ctx = createContext(null);
-const KEY = 'token-estate-demo-v1';
-const today = () => new Date().toLocaleDateString('bg-BG');
+const KEY = 'token-estate-demo-v2';
 
 export function useStore() {
   return useContext(Ctx);
@@ -18,7 +17,7 @@ export default function Providers({ children }) {
     try {
       st = JSON.parse(localStorage.getItem(KEY));
     } catch (e) {}
-    setS(st && st.v === 1 ? st : initState());
+    setS(st && st.v === 2 ? st : initState());
   }, []);
 
   useEffect(() => {
@@ -29,70 +28,82 @@ export default function Providers({ children }) {
   }, [s]);
 
   const api = useMemo(() => {
-    const up = (fn) => setS((p) => ({ ...p, ...fn(p) }));
+    // fn(ps, s, p) връща { ps: промени по проекта, ...промени по общото състояние }
+    const up = (pid, fn) =>
+      setS((s) => {
+        const p = getP(pid);
+        const r = fn(s.proj[pid], s, p);
+        if (!r) return s;
+        const { ps, ...root } = r;
+        return { ...s, ...root, proj: { ...s.proj, [pid]: { ...s.proj[pid], ...(ps || {}) } } };
+      });
+    const tx = (s, pid, t, qty, price) => [{ d: today(), pid, t, qty, price }, ...s.tx];
     return {
-      buyPrimary: (q) =>
-        up((p) => {
-          const n = Math.min(q, P.tokens - p.sold, Math.floor(p.cash / P.price));
-          if (n <= 0 || p.stage !== 0) return {};
+      buyPrimary: (pid, q) =>
+        up(pid, (ps, s, p) => {
+          const n = Math.min(q, p.tokens - ps.sold, Math.floor(s.cash / p.price));
+          if (n <= 0 || ps.stage !== 0) return null;
           return {
-            sold: p.sold + n,
-            mine: p.mine + n,
-            cash: p.cash - n * P.price,
-            tx: [{ d: today(), t: 'Покупка · първичен пазар', qty: n, price: P.price }, ...p.tx],
+            ps: { sold: ps.sold + n, mine: ps.mine + n },
+            cash: s.cash - n * p.price,
+            tx: tx(s, pid, 'Покупка · първичен пазар', n, p.price),
           };
         }),
-      tick: () => up((p) => (p.stage === 0 && p.sold < P.tokens ? { sold: p.sold + 1 } : {})),
-      complete: () =>
-        up((p) => ({
-          sold: P.tokens,
-          stage: Math.max(1, p.stage),
-          news: [{ d: today(), t: 'Набирането приключи успешно: 200 от 200 токена. Средствата са в ескроу сметка.' }, ...p.news],
+      tick: (pid) => up(pid, (ps, s, p) => (ps.stage === 0 && ps.sold < p.tokens ? { ps: { sold: ps.sold + 1 } } : null)),
+      complete: (pid) =>
+        up(pid, (ps, s, p) => ({
+          ps: { sold: p.tokens, stage: Math.max(1, ps.stage) },
+          news: [{ d: today(), pid, t: 'Набирането приключи успешно. Средствата са в ескроу сметка.' }, ...s.news],
         })),
-      setStage: (i) => up((p) => ({ stage: i, sold: i > 0 ? P.tokens : p.sold, aptsSold: i < 5 ? 0 : p.aptsSold })),
-      setApts: (n) => up(() => ({ aptsSold: n })),
-      buyListing: (id) =>
-        up((p) => {
-          const l = p.listings.find((x) => x.id === id);
-          if (!l || l.mine) return {};
-          const price = fairValue(p) + l.off;
+      setStage: (pid, i) =>
+        up(pid, (ps, s, p) => ({ ps: { stage: i, sold: i > 0 ? p.tokens : ps.sold, prog: i < last(p) ? 0 : ps.prog } })),
+      setProg: (pid, n) => up(pid, () => ({ ps: { prog: n } })),
+      buyListing: (pid, id) =>
+        up(pid, (ps, s, p) => {
+          const l = ps.listings.find((x) => x.id === id);
+          if (!l || l.mine) return null;
+          const price = fairValue(p, ps) + l.off;
           const total = price * l.qty;
-          if (p.cash < total) return {};
+          if (s.cash < total) return null;
           return {
-            cash: p.cash - total,
-            mine: p.mine + l.qty,
-            fees: p.fees + total * P.feeTrade,
-            listings: p.listings.filter((x) => x.id !== id),
-            trades: [...p.trades, { price, qty: l.qty }],
-            tx: [{ d: today(), t: 'Покупка · вторичен пазар', qty: l.qty, price }, ...p.tx],
+            ps: {
+              mine: ps.mine + l.qty,
+              fees: ps.fees + total * FEE.trade,
+              listings: ps.listings.filter((x) => x.id !== id),
+              trades: [...ps.trades, { price, qty: l.qty }],
+            },
+            cash: s.cash - total,
+            tx: tx(s, pid, 'Покупка · вторичен пазар', l.qty, price),
           };
         }),
-      listMine: (qty, price) =>
-        up((p) => {
-          const listed = p.listings.filter((x) => x.mine).reduce((a, x) => a + x.qty, 0);
-          if (qty <= 0 || qty > p.mine - listed) return {};
-          return { listings: [...p.listings, { id: Date.now(), seller: 'Вие', qty, off: price - fairValue(p), mine: true }] };
+      listMine: (pid, qty, price) =>
+        up(pid, (ps, s, p) => {
+          const listed = ps.listings.filter((x) => x.mine).reduce((a, x) => a + x.qty, 0);
+          if (qty <= 0 || qty > ps.mine - listed) return null;
+          return { ps: { listings: [...ps.listings, { id: Date.now(), seller: 'Вие', qty, off: price - fairValue(p, ps), mine: true }] } };
         }),
-      cancelListing: (id) => up((p) => ({ listings: p.listings.filter((x) => x.id !== id) })),
-      botBuy: (id) =>
-        up((p) => {
-          const l = p.listings.find((x) => x.id === id);
-          if (!l || !l.mine) return {};
-          const price = fairValue(p) + l.off;
+      cancelListing: (pid, id) => up(pid, (ps) => ({ ps: { listings: ps.listings.filter((x) => x.id !== id) } })),
+      botBuy: (pid, id) =>
+        up(pid, (ps, s, p) => {
+          const l = ps.listings.find((x) => x.id === id);
+          if (!l || !l.mine) return null;
+          const price = fairValue(p, ps) + l.off;
           const total = price * l.qty;
-          const fee = total * P.feeTrade;
+          const fee = total * FEE.trade;
           return {
-            cash: p.cash + total - fee,
-            mine: p.mine - l.qty,
-            fees: p.fees + fee,
-            listings: p.listings.filter((x) => x.id !== id),
-            trades: [...p.trades, { price, qty: l.qty }],
-            tx: [{ d: today(), t: 'Продажба · вторичен пазар', qty: l.qty, price }, ...p.tx],
+            ps: {
+              mine: ps.mine - l.qty,
+              fees: ps.fees + fee,
+              listings: ps.listings.filter((x) => x.id !== id),
+              trades: [...ps.trades, { price, qty: l.qty }],
+            },
+            cash: s.cash + total - fee,
+            tx: tx(s, pid, 'Продажба · вторичен пазар', l.qty, price),
           };
         }),
-      release: (i) => up((p) => ({ released: p.released.map((r, j) => (j === i ? true : r)) })),
-      approveKyc: (i) => up((p) => ({ investors: p.investors.map((x, j) => (j === i ? { ...x, kyc: true } : x)) })),
-      addNews: (t) => up((p) => ({ news: [{ d: today(), t }, ...p.news] })),
+      release: (pid, i) => up(pid, (ps) => ({ ps: { released: ps.released.map((r, j) => (j === i ? true : r)) } })),
+      addNews: (pid, t) => up(pid, (ps, s) => ({ news: [{ d: today(), pid, t }, ...s.news] })),
+      approveKyc: (i) => setS((s) => ({ ...s, investors: s.investors.map((x, j) => (j === i ? { ...x, kyc: true } : x)) })),
       reset: () => setS(initState()),
     };
   }, []);

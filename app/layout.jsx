@@ -4,7 +4,7 @@ import Nav from '../components/Nav';
 
 export const metadata = {
   title: 'TokenEstate · демо платформа за токенизация на имоти',
-  description: 'Демо: сграда, разделена на 200 токена по 5 000 €, с 3D модел, калкулатор, вторичен пазар, профил на инвеститора и админ панел.',
+  description: 'Демо: шест секции за финансиране с токени – сгради, соларна енергия, имоти под наем, ремонти, хотели и земя.',
 };
 
 export default function RootLayout({ children }) {
