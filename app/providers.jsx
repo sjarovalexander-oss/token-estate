@@ -23,7 +23,7 @@ export default function Providers({ children }) {
 
   // филмите на секциите се теглят на заден план още при отваряне на сайта
   useEffect(() => {
-    const t = setTimeout(() => startPreload(CATS.map((c) => c.slug)), 1500);
+    const t = setTimeout(() => startPreload(CATS.map((c) => c.slug)), 4000);
     return () => clearTimeout(t);
   }, []);
 
