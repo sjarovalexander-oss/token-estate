@@ -1,9 +1,11 @@
 import './globals.css';
 import Providers from './providers';
 import Nav from '../components/Nav';
+import Footer from '../components/Footer';
+import { BRAND } from '../lib/brand-name';
 
 export const metadata = {
-  title: 'TokenEstate · демо платформа за токенизация на имоти',
+  title: BRAND.name + ' · демо платформа за токенизация на реални активи',
   description: 'Демо: шест секции за финансиране с токени – сгради, соларна енергия, имоти под наем, ремонти, хотели и земя.',
 };
 
@@ -21,10 +23,7 @@ export default function RootLayout({ children }) {
         <Providers>
           <Nav />
           <main>{children}</main>
-          <footer className="foot">
-            Демонстрационна версия. Всички проекти, лица, цени и доходности са измислени за илюстрация. Реалното предлагане
-            на такива инвестиции изисква лиценз от КФН по Регламент (ЕС) 2020/1503. Доходността е прогноза, а не гаранция.
-          </footer>
+          <Footer />
         </Providers>
       </body>
     </html>

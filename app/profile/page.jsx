@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../lib/brand';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
@@ -55,6 +56,7 @@ export default function Profile() {
 
   return (
     <>
+      <EnNote />
       <section className="pr-hero">
         <div className="pr-collage" style={{ gridTemplateColumns: `repeat(${heroRows.length}, 1fr)` }}>
           {heroRows.map((r) => <img key={r.p.id} src={still(r.p.cat, frameOf(r.p, r.ps.stage))} alt="" />)}

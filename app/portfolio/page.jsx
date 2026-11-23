@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../lib/brand';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
@@ -82,6 +83,7 @@ export default function Portfolio() {
 
   return (
     <>
+      <EnNote />
       <section className="pf-hero">
         <div className="pf-collage">
           {CATS.map((c, i) => (

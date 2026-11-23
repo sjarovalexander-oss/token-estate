@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../../lib/brand';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Film, Story } from '../../../components/Film';
@@ -16,6 +17,7 @@ export default function Sector() {
   const feat = list[0];
   return (
     <>
+      <EnNote />
 
 
 <Story key={c.slug} name={c.slug} chapters={STORY[c.slug]} label={c.icon + ' ' + c.name + ' · скролни надолу'} />

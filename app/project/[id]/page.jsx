@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../../lib/brand';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -36,12 +37,12 @@ function Calculator({ p }) {
     ? [
         { t: 'По план', m: p.months, out: p.payout, note: 'Проектът приключва в срок и токенът се изплаща по ' + eur(p.payout) + '.' },
         { t: 'Забава 6 месеца', m: p.months + 6, out: p.payout, note: 'Същата сума, но по-късно: годишната доходност пада.' },
-        { t: 'Ранен изход', m: mid.month, out: mid.fair * (1 - FEE.trade), note: 'Продажба на вторичния пазар на етап „' + mid.short + '“ минус 1% такса. Зависи дали има купувач.' },
+        { t: 'Ранен изход', m: mid.month, out: mid.fair * (1 - FEE.trade), note: 'Продажба чрез таблото за обяви на етап „' + mid.short + '“ минус 1% такса. Зависи дали има купувач.' },
       ]
     : [
         { t: 'По план', m: p.years * 12, out: p.price * (1 + p.yld * p.years), note: 'Тримесечни плащания за ' + p.years + ' години и връщане на вложената сума накрая.' },
         { t: 'Доход с 20% по-нисък', m: p.years * 12, out: p.price * (1 + p.yld * 0.8 * p.years), note: 'По-слаби приходи на проекта: плащанията намаляват, вложената сума се връща.' },
-        { t: 'Ранен изход (2 години)', m: 24, out: p.price * p.yld * 2 + p.stages[last(p)].fair * (1 - FEE.trade), note: 'Получен доход за 2 години плюс продажба на вторичния пазар минус 1% такса.' },
+        { t: 'Ранен изход (2 години)', m: 24, out: p.price * p.yld * 2 + p.stages[last(p)].fair * (1 - FEE.trade), note: 'Получен доход за 2 години плюс продажба чрез таблото за обяви минус 1% такса.' },
       ];
   const x = scen[sc];
   const inv = n * p.price;
@@ -99,6 +100,7 @@ export default function Project() {
 
   return (
     <>
+      <EnNote />
       <section className="vbanner">
         <LoopVideo name={p.cat} key={p.cat} />
         <div className="film-shade" />
@@ -147,13 +149,12 @@ export default function Project() {
                   </button>
                 </div>
                 <p className="muted small">
-                  Парите стоят в ескроу сметка. Ако не се наберат всички {p.tokens} токена, получаваш си ги обратно изцяло.{' '}
-                  <a onClick={() => complete(p.id)}>Демо: приключи набирането сега →</a>
+                  Парите стоят в ескроу сметка. Ако не се наберат всички {p.tokens} токена, получаваш си ги обратно изцяло.
                 </p>
               </>
             ) : (
               <p className="ok">
-                ✓ Набирането е успешно. Токените се търгуват на <Link href={'/market?p=' + p.id}>вторичния пазар</Link>.
+                ✓ Набирането е успешно. Токените могат да се прехвърлят чрез <Link href={'/market?p=' + p.id}>таблото за обяви</Link> между инвеститори.
               </p>
             )}
           </div>

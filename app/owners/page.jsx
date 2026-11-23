@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../lib/brand';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
@@ -40,6 +41,7 @@ export default function Owners() {
 
   return (
     <>
+      <EnNote />
       <section className="ow-hero">
         <img src={still('stroitelstvo', 2)} alt="" />
         <div className="ow-hero-shade" />

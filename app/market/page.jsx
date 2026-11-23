@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../lib/brand';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
@@ -122,13 +123,14 @@ export default function Market() {
 
   return (
     <>
+      <EnNote />
       <section className="mk-hero">
         <img key={p.id + ps.stage} src={still(p.cat, frameOf(p, ps.stage))} alt="" className="on" fetchpriority="high" />
         <div className="mk-hero-shade" />
         <div className="mk-hero-txt">
-          <div className="eyebrow">Вторичен пазар · {c.icon} {c.name}</div>
+          <div className="eyebrow">Табло за обяви · {c.icon} {c.name}</div>
           <h1>{p.name}</h1>
-          <p className="lead">Купи или продай токени от други инвеститори, преди проектът да е приключил.</p>
+          <p className="lead">Обяви между инвеститори за прехвърляне на токени, преди проектът да е приключил. Платформата не е място за търговия.</p>
           <div className="mk-stage"><i /> Етап: {p.stages[ps.stage].k}</div>
         </div>
         <div className="mk-price card">
@@ -157,17 +159,20 @@ export default function Market() {
         ))}
       </section>
 
+      <div className="mk-disc">
+        <b>ⓘ Табло за обяви, не борса.</b> Платформата само показва обяви на инвеститори, които искат да прехвърлят токени. Не съпоставя поръчки, не определя цена и не гарантира, че ще има купувач. Ориентировъчната стойност е изчислена по етапа на проекта и е само за информация. Всяко прехвърляне се потвърждава от продавача.
+      </div>
+
       {toast && <div className="mk-toast">{toast}</div>}
 
       {!openMkt ? (
         <section className="card center mk-closed">
           <div className="okmark" style={{ background: 'var(--gold)', boxShadow: '0 0 0 10px rgba(216,179,106,.15)' }}>⏳</div>
-          <h2>Пазарът за „{p.name}“ още не е отворен</h2>
-          <p className="muted">Токените се търгуват между инвеститорите едва след успешното набиране. Продадени досега: {ps.sold} от {p.tokens}.</p>
+          <h2>Обявите за „{p.name}“ още не са отворени</h2>
+          <p className="muted">Обявите между инвеститори се отварят едва след успешното набиране. Продадени досега: {ps.sold} от {p.tokens}.</p>
           <div className="bar" style={{ maxWidth: 420, margin: '14px auto' }}><i style={{ width: (ps.sold / p.tokens) * 100 + '%' }} /></div>
           <div className="row center">
-            <Link className="btn ghost" href={'/project/' + p.id}>Купи от първичния пазар</Link>
-            <button className="btn sm" onClick={() => complete(p.id)}>Демо: приключи набирането</button>
+            <Link className="btn ghost" href={'/project/' + p.id}>Към набирането</Link>
           </div>
         </section>
       ) : (
@@ -179,12 +184,12 @@ export default function Market() {
                 <span className="muted small">общо очаквано до края: <b className="gold">{eur(totalPer(p))}</b></span>
               </div>
               <Chart p={p} ps={ps} trades={ps.trades} live={live} />
-              <p className="muted small">Плътната линия е изминатият път, пунктирът е прогноза до края. Сините точки са последните сделки. Цената се определя от купувачите и продавачите и може да падне при забава.</p>
+              <p className="muted small">Плътната линия е изминатият път, пунктирът е прогноза до края. Сините точки са последните прехвърляния. Ориентировъчната стойност е само за информация; цената се договаря между продавача и купувача и може да падне при забава.</p>
             </div>
             <div className="card mk-live">
               <div className="mk-head">
-                <h3>Сделки на живо</h3>
-                <span className="live-dot">● на живо</span>
+                <h3>Последни прехвърляния</h3>
+                <span className="live-dot">● обновява се</span>
               </div>
               <ul>
                 {[...live].reverse().slice(0, 7).map((t, i) => (
@@ -194,9 +199,9 @@ export default function Market() {
                     <b>{t.qty} × {eur(t.price)}</b>
                   </li>
                 ))}
-                {!live.length && <li className="muted">Изчакване на следващата сделка…</li>}
+                {!live.length && <li className="muted">Изчакване на следващото прехвърляне…</li>}
               </ul>
-              <p className="muted small">Сделките на други инвеститори са симулирани за демото.</p>
+              <p className="muted small">Прехвърлянията между други инвеститори са симулирани за демото.</p>
             </div>
           </section>
 
@@ -219,8 +224,8 @@ export default function Market() {
                       {l.mine ? (
                         <button className="btn ghost" onClick={() => cancelListing(p.id, l.id)}>Свали</button>
                       ) : (
-                        <button className="btn sm" disabled={s.cash < pr * l.qty} onClick={() => { buyListing(p.id, l.id); say(`✓ Купи ${l.qty} ${l.qty === 1 ? 'токен' : 'токена'} за ${eur(pr * l.qty)}`); }}>
-                          Купи за {eur(pr * l.qty)}
+                        <button className="btn sm" disabled={s.cash < pr * l.qty} onClick={() => { buyListing(p.id, l.id); say(`✓ Продавачът потвърди. Получи ${l.qty} ${l.qty === 1 ? 'токен' : 'токена'} за ${eur(pr * l.qty)}`); }}>
+                          Заяви покупка · {eur(pr * l.qty)}
                         </button>
                       )}
                     </div>
@@ -231,7 +236,7 @@ export default function Market() {
             </div>
 
             <div className="card mk-sell">
-              <h3>Продай свои токени</h3>
+              <h3>Пусни обява за продажба</h3>
               <div className="mk-hold">
                 <img src={thumb(p.cat, frameOf(p, ps.stage))} alt="" loading="lazy" decoding="async" />
                 <div>
@@ -242,7 +247,7 @@ export default function Market() {
               </div>
               {free < 1 ? (
                 <>
-                  <p className="muted small">{ps.mine ? 'Всичките ти токени вече са обявени.' : 'Нямаш токени от този проект.'} Купи от обявите вляво или от първичния пазар.</p>
+                  <p className="muted small">{ps.mine ? 'Всичките ти токени вече са обявени.' : 'Нямаш токени от този проект.'} Заяви покупка от обявите вляво или от първичния пазар.</p>
                   <Link className="btn ghost" href={'/project/' + p.id}>Към проекта</Link>
                 </>
               ) : (

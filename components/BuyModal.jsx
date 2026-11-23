@@ -3,15 +3,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../app/providers';
 import { eur, totalPer, retLabel, termLabel } from '../lib/data';
+import { TestPanel, LimitWarning, needsLimit } from './Compliance';
 
 // Покупка в три стъпки: преглед, потвърждение на рисковете, сертификат
 export default function BuyModal({ p, q, onClose }) {
-  const { s, buyPrimary } = useStore();
+  const { s, buyPrimary, setInvestor } = useStore();
+  const [c, setC] = useState(false);
   const [step, setStep] = useState(1);
   const [a, setA] = useState(false);
   const [b, setB] = useState(false);
   const [cert] = useState(() => 'TE-' + p.id.slice(0, 3).toUpperCase() + '-' + Math.floor(100000 + Math.random() * 900000));
   const sum = q * p.price;
+  const inv = s.investor;
+  const big = needsLimit(sum, inv);
   return (
     <div className="modal-bg" onClick={step === 3 ? onClose : undefined}>
       <div className="modal card" onClick={(e) => e.stopPropagation()}>
@@ -20,7 +24,8 @@ export default function BuyModal({ p, q, onClose }) {
             <span key={t} className={step >= i + 1 ? 'on' : ''}><b>{i + 1}</b> {t}</span>
           ))}
         </div>
-        {step === 1 && (
+        {step === 1 && !(inv && inv.tested) && <TestPanel onDone={(x) => setInvestor(x)} onCancel={onClose} />}
+        {step === 1 && inv && inv.tested && (
           <>
             <h3>{p.name}</h3>
             <table className="tbl">
@@ -45,10 +50,11 @@ export default function BuyModal({ p, q, onClose }) {
             <h3>Преди да потвърдиш</h3>
             <label className="chk"><input type="checkbox" checked={a} onChange={(e) => setA(e.target.checked)} /> Прочетох основния информационен документ за инвестицията (KIIS).</label>
             <label className="chk"><input type="checkbox" checked={b} onChange={(e) => setB(e.target.checked)} /> Разбирам, че доходността е прогноза и мога да загубя част от сумата или цялата.</label>
+            {big && <LimitWarning amount={sum} inv={inv} checked={c} onChange={setC} />}
             <p className="muted small">Имаш 4 дни за размисъл, в които можеш да се откажеш без причина и без такса.</p>
             <div className="row end">
               <button className="btn ghost" onClick={() => setStep(1)}>Назад</button>
-              <button className="btn sm" disabled={!a || !b} onClick={() => { buyPrimary(p.id, q); setStep(3); }}>Потвърди покупката за {eur(sum)}</button>
+              <button className="btn sm" disabled={!a || !b || (big && !c)} onClick={() => { buyPrimary(p.id, q); setStep(3); }}>Потвърди покупката за {eur(sum)}</button>
             </div>
           </>
         )}

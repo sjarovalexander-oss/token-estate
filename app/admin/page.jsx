@@ -1,4 +1,5 @@
 'use client';
+import { EnNote } from '../../lib/brand';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
@@ -31,6 +32,7 @@ export default function Admin() {
 
   return (
     <>
+      <EnNote />
       <section className="ad-head">
         <div>
           <div className="eyebrow">Админ панел · оператор на платформата</div>
@@ -196,7 +198,7 @@ export default function Admin() {
       <section className="card" id="kyc">
         <h3>Инвеститори</h3>
         <div className="ad-inv">
-          <div className="ad-person me"><span className="pr-avatar sm">ДИ</span><div className="grow"><b>Демо Инвеститор (ти)</b><span className="muted">{eur(s.cash)} свободни</span></div><span className="tag ok">потвърден</span></div>
+          <div className="ad-person me"><span className="pr-avatar sm">ДИ</span><div className="grow"><b>Демо Инвеститор (ти)</b><span className="muted">{eur(s.cash)} свободни · {s.investor && s.investor.tested ? `тест ${s.investor.score}/4 · нетно имущество ${eur(s.investor.netWorth)}` : 'тестът за знания не е попълнен'}</span></div><span className="tag ok">потвърден</span></div>
           {s.investors.map((x, i) => (
             <div key={x.n} className="ad-person">
               <span className="pr-avatar sm">{x.n.split(' ').map((w) => w[0]).join('')}</span>

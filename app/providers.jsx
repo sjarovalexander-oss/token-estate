@@ -80,7 +80,7 @@ export default function Providers({ children }) {
               trades: [...ps.trades, { price, qty: l.qty }],
             },
             cash: s.cash - total,
-            tx: tx(s, pid, 'Покупка · вторичен пазар', l.qty, price),
+            tx: tx(s, pid, 'Покупка · табло за обяви', l.qty, price),
           };
         }),
       listMine: (pid, qty, price) =>
@@ -105,7 +105,7 @@ export default function Providers({ children }) {
               trades: [...ps.trades, { price, qty: l.qty }],
             },
             cash: s.cash + total - fee,
-            tx: tx(s, pid, 'Продажба · вторичен пазар', l.qty, price),
+            tx: tx(s, pid, 'Продажба · табло за обяви', l.qty, price),
           };
         }),
       release: (pid, i) => up(pid, (ps) => ({ ps: { released: ps.released.map((r, j) => (j === i ? true : r)) } })),
@@ -140,6 +140,7 @@ export default function Providers({ children }) {
           };
         }),
       approveKyc: (i) => setS((s) => ({ ...s, investors: s.investors.map((x, j) => (j === i ? { ...x, kyc: true } : x)) })),
+      setInvestor: (x) => setS((s) => ({ ...s, investor: { ...(s.investor || {}), ...x } })),
       reset: () => setS(initState()),
     };
   }, []);
