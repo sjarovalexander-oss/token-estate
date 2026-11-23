@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
 import { usePicked } from '../../components/ProjectPicker';
-import { FEE, PROJECTS, getP, getC, fairValue, still, eur, totalPer, last } from '../../lib/data';
+import { FEE, PROJECTS, getP, getC, fairValue, still, thumb, eur, totalPer, last } from '../../lib/data';
 
 const frameOf = (p, st) => (p.frames ? p.frames[st] : Math.min(st, 3));
 const pctTxt = (v) => (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%';
@@ -123,9 +123,7 @@ export default function Market() {
   return (
     <>
       <section className="mk-hero">
-        {p.stages.map((st, i) => (
-          <img key={i} src={still(p.cat, frameOf(p, i))} alt="" className={i === ps.stage ? 'on' : ''} />
-        ))}
+        <img key={p.id + ps.stage} src={still(p.cat, frameOf(p, ps.stage))} alt="" className="on" fetchpriority="high" />
         <div className="mk-hero-shade" />
         <div className="mk-hero-txt">
           <div className="eyebrow">Вторичен пазар · {c.icon} {c.name}</div>
@@ -148,7 +146,7 @@ export default function Market() {
       <section className="mk-pick">
         {cards.map(({ x, xs, f, chg: ch }) => (
           <button key={x.id} className={'mk-card' + (x.id === p.id ? ' on' : '')} onClick={() => setPid(x.id)}>
-            <img src={still(x.cat, frameOf(x, xs.stage))} alt="" />
+            <img src={thumb(x.cat, frameOf(x, xs.stage))} alt="" loading="lazy" decoding="async" />
             <div className="mk-card-shade" />
             <div className="mk-card-body">
               <span>{getC(x.cat).icon} {x.name}</span>
@@ -235,7 +233,7 @@ export default function Market() {
             <div className="card mk-sell">
               <h3>Продай свои токени</h3>
               <div className="mk-hold">
-                <img src={still(p.cat, frameOf(p, ps.stage))} alt="" />
+                <img src={thumb(p.cat, frameOf(p, ps.stage))} alt="" loading="lazy" decoding="async" />
                 <div>
                   <span>Притежаваш</span>
                   <b>{ps.mine} {ps.mine === 1 ? 'токен' : 'токена'}</b>

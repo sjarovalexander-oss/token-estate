@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
-import { CATS, PROJECTS, FEE, STILLS, still, eur } from '../../lib/data';
+import { CATS, PROJECTS, FEE, STILLS, still, thumb, eur } from '../../lib/data';
 
 const STEPS = [
   ['Подаваш заявка', 'Описваш проекта, сумата и доходността, която предлагаш.', 0],
@@ -62,7 +62,7 @@ export default function Owners() {
       <section className="ow-steps" id="how">
         {STEPS.map(([t, d, i]) => (
           <div key={t} className="ow-step">
-            <img src={still('stroitelstvo', i + 1)} alt="" />
+            <img src={thumb('stroitelstvo', i + 1)} alt="" loading="lazy" decoding="async" />
             <div className="ow-step-shade" />
             <span className="ow-n">{String(i + 1).padStart(2, '0')}</span>
             <div className="ow-step-txt"><b>{t}</b><p>{d}</p></div>
@@ -89,7 +89,7 @@ export default function Owners() {
               <div className="ow-cats">
                 {CATS.map((x) => (
                   <button key={x.slug} className={f.cat === x.slug ? 'on' : ''} onClick={() => pick(x.slug)}>
-                    <img src={still(x.slug, STILLS[x.slug] - 1)} alt="" />
+                    <img src={thumb(x.slug, STILLS[x.slug] - 1)} alt="" loading="lazy" decoding="async" />
                     <span>{x.icon} {x.name}</span>
                   </button>
                 ))}
@@ -120,7 +120,7 @@ export default function Owners() {
           <div className="ow-preview">
             <div className="eyebrow">Така ще изглежда в каталога</div>
             <div className="pcard ow-pcard">
-              <div className="ow-pimg"><img src={still(f.cat, last)} alt="" key={f.cat} /><span className="tag ok">Набира средства</span></div>
+              <div className="ow-pimg"><img src={thumb(f.cat, last)} alt="" loading="lazy" decoding="async" key={f.cat} /><span className="tag ok">Набира средства</span></div>
               <div className="pc-body">
                 <div className="eyebrow">{f.loc || 'Местоположение'}</div>
                 <h3>{f.name || 'Името на проекта'}</h3>

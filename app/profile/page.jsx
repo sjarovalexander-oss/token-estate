@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useStore } from '../providers';
 import { Count, Donut } from '../../components/Bits';
 import StageView from '../../components/StageView';
-import { PROJECTS, getP, getC, fairValue, paidPer, totalPer, still, last, eur } from '../../lib/data';
+import { PROJECTS, getP, getC, fairValue, paidPer, totalPer, still, thumb, last, eur } from '../../lib/data';
 
 const frameOf = (p, st) => (p.frames ? p.frames[st] : Math.min(st, 3));
 const NQ = 12; // следващите 12 тримесечия
@@ -95,7 +95,7 @@ export default function Profile() {
                 const g = r.value - r.cost;
                 return (
                   <button key={r.p.id} className={'pr-card' + (cur.p.id === r.p.id ? ' on' : '')} onClick={() => setSel(r.p.id)}>
-                    <img src={still(r.p.cat, frameOf(r.p, r.ps.stage))} alt="" />
+                    <img src={thumb(r.p.cat, frameOf(r.p, r.ps.stage))} alt="" loading="lazy" decoding="async" />
                     <div className="pr-card-shade" />
                     <div className="pr-card-top"><span>{getC(r.p.cat).icon} {getC(r.p.cat).name}</span><span className="sv-chip"><i /> {r.p.stages[r.ps.stage].short}</span></div>
                     <div className="pr-card-body">
@@ -184,7 +184,7 @@ export default function Profile() {
               const sell = t.t.startsWith('Продажба');
               return (
                 <li key={i}>
-                  {p ? <img src={still(p.cat, frameOf(p, s.proj[p.id].stage))} alt="" /> : <span className="pr-ic">•</span>}
+                  {p ? <img src={thumb(p.cat, frameOf(p, s.proj[p.id].stage))} alt="" loading="lazy" decoding="async" /> : <span className="pr-ic">•</span>}
                   <div className="grow"><b>{p ? p.name : t.pid}</b><span className="muted">{t.d} · {t.t} · {t.qty} бр.</span></div>
                   <b className={sell ? 'green' : ''}>{sell ? '+' : '−'}{eur(t.qty * t.price)}</b>
                 </li>

@@ -5,7 +5,7 @@ import { useStore } from '../providers';
 import { usePicked } from '../../components/ProjectPicker';
 import StageView from '../../components/StageView';
 import { Count } from '../../components/Bits';
-import { CATS, PROJECTS, getP, getC, fairValue, platformRevenue, target, last, still, STILLS, eur } from '../../lib/data';
+import { CATS, PROJECTS, getP, getC, fairValue, platformRevenue, target, last, still, thumb, STILLS, eur } from '../../lib/data';
 
 const frameOf = (p, st) => (p.frames ? p.frames[st] : Math.min(st, 3));
 
@@ -58,7 +58,7 @@ export default function Admin() {
             const xs = s.proj[x.id];
             return (
               <button key={x.id} className={'ad-card' + (x.id === p.id ? ' on' : '')} onClick={() => setPid(x.id)}>
-                <img src={still(x.cat, frameOf(x, xs.stage))} alt="" />
+                <img src={thumb(x.cat, frameOf(x, xs.stage))} alt="" loading="lazy" decoding="async" />
                 <div className="mk-card-shade" />
                 <div className="ad-card-top">
                   <span className="sv-chip"><i style={{ background: xs.stage ? 'var(--green)' : 'var(--gold)' }} /> {x.stages[xs.stage].short}</span>
@@ -99,7 +99,7 @@ export default function Admin() {
               <div className="ad-stages">
                 {p.stages.map((st, i) => (
                   <button key={st.k} className={(i === ps.stage ? 'on ' : '') + (i < ps.stage ? 'done' : '')} onClick={() => (i === 1 && ps.stage === 0 ? complete(p.id) : setStage(p.id, i))}>
-                    <img src={still(p.cat, frameOf(p, i))} alt="" />
+                    <img src={thumb(p.cat, frameOf(p, i))} alt="" loading="lazy" decoding="async" />
                     <span><b>{i + 1}</b> {st.k}</span>
                   </button>
                 ))}
@@ -115,7 +115,7 @@ export default function Admin() {
               <ul className="ad-tr">
                 {p.tr.map((t, i) => t ? (
                   <li key={i}>
-                    <img src={still(p.cat, frameOf(p, Math.min(i + 1, L)))} alt="" />
+                    <img src={thumb(p.cat, frameOf(p, Math.min(i + 1, L)))} alt="" loading="lazy" decoding="async" />
                     <div className="grow"><b>Транш {i + 1} · {p.stages[i + 1].short}</b><span className="muted">{t}% · {eur((target(p) * t) / 100)}</span></div>
                     {ps.released[i] ? <span className="tag ok">освободен</span> : <button className="btn sm" disabled={ps.stage < i + 1} onClick={() => release(p.id, i)}>Освободи</button>}
                   </li>
@@ -146,7 +146,7 @@ export default function Admin() {
           <ul className="ad-apps">
             {s.apps.map((a) => (
               <li key={a.id} className={a.status}>
-                <img src={still(a.cat, STILLS[a.cat] - 1)} alt="" />
+                <img src={thumb(a.cat, STILLS[a.cat] - 1)} alt="" loading="lazy" decoding="async" />
                 <div className="grow">
                   <b>{a.name}</b>
                   <span className="muted">{getC(a.cat).icon} {a.company} · {a.loc}</span>

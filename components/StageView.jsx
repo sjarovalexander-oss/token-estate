@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { STILLS, still } from '../lib/data';
+import { STILLS, still, thumb } from '../lib/data';
 
 // Фотореалистичен изглед на проекта: кадърът на текущия етап, с плавна смяна.
 // p = проект (cat, frames, stages); stage = текущ етап; auto = върти кадрите сам (за страницата на секцията)
@@ -16,11 +16,13 @@ export default function StageView({ p, stage = 0, auto = false, height = 520, ba
   }, [auto]);
   const st = auto ? tick % p.stages.length : peek ?? stage;
   const cur = frames[st];
-  const used = [...new Set(frames)];
+  // големите снимки се теглят само за етапите, които реално са показани
+  const [seen, setSeen] = useState(() => [cur]);
+  useEffect(() => { setSeen((x) => (x.includes(cur) ? x : [...x, cur])); }, [cur]);
   return (
     <div className="stageview" style={{ height }}>
-      {used.map((f) => (
-        <img key={f} src={still(p.cat, f)} alt="" className={f === cur ? 'on' : ''} loading={f === cur ? 'eager' : 'lazy'} />
+      {seen.map((f) => (
+        <img key={f} src={still(p.cat, f)} alt="" className={f === cur ? 'on' : ''} decoding="async" />
       ))}
       <div className="sv-shade" />
       <div className="sv-top">
@@ -39,7 +41,7 @@ export default function StageView({ p, stage = 0, auto = false, height = 520, ba
             onClick={() => (auto ? setTick(i) : setPeek(i === stage ? null : i))}
             title={s.k}
           >
-            <img src={still(p.cat, frames[i])} alt="" loading="lazy" />
+            <img src={thumb(p.cat, frames[i])} alt="" loading="lazy" />
             <span>{s.short}</span>
           </button>
         ))}

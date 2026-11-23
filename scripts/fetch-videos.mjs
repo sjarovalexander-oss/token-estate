@@ -67,17 +67,19 @@ mkdirSync(`${OUT}/stills`, { recursive: true });
 let nst = 0;
 for (const [cat, list] of Object.entries(STILLS)) {
   for (const [i, f] of list.entries()) {
-    const c = `${CACHE}/still-${f.slice(-12)}.jpg`;
+    const c = `${CACHE}/still2-${f.slice(-12)}.jpg`, ct = `${CACHE}/still2-${f.slice(-12)}-t.jpg`;
     try {
-      if (!existsSync(c)) {
+      if (!existsSync(c) || !existsSync(ct)) {
         const res = await fetch(BASE + f + '.png');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const tmp = c + '.png';
         writeFileSync(tmp, Buffer.from(await res.arrayBuffer()));
-        ff(['-i', tmp, '-vf', 'scale=1600:-2', '-q:v', '4', c]);
+        ff(['-i', tmp, '-vf', 'scale=1440:-2', '-q:v', '5', c]);
+        ff(['-i', tmp, '-vf', 'scale=560:-2', '-q:v', '6', ct]);
         rmSync(tmp);
       }
       copyFileSync(c, `${OUT}/stills/${cat}-${i}.jpg`);
+      copyFileSync(ct, `${OUT}/stills/${cat}-${i}-t.jpg`);
       nst++;
     } catch (e) {
       console.warn('still skipped:', cat, i, '-', e.message);

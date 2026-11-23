@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useStore } from '../providers';
 import { Count } from '../../components/Bits';
-import { CATS, PROJECTS, PROFILES, DEPOSIT, STILLS, still, getC, annual, isOpen, last, eur, retLabel, termLabel } from '../../lib/data';
+import { CATS, PROJECTS, PROFILES, DEPOSIT, STILLS, still, thumb, getC, annual, isOpen, last, eur, retLabel, termLabel } from '../../lib/data';
 
 // Риск по секции (1 = най-нисък, 5 = най-висок) — илюстрация за демото
 const RISK = { zemia: 1, naem: 2, energia: 2, hoteli: 3, stroitelstvo: 4, remont: 5 };
@@ -85,7 +85,7 @@ export default function Portfolio() {
       <section className="pf-hero">
         <div className="pf-collage">
           {CATS.map((c, i) => (
-            <img key={c.slug} src={still(c.slug, STILLS[c.slug] - 1)} alt="" style={{ animationDelay: i * 0.12 + 's' }} />
+            <img key={c.slug} src={thumb(c.slug, STILLS[c.slug] - 1)} alt="" loading="lazy" decoding="async" style={{ animationDelay: i * 0.12 + 's' }} />
           ))}
         </div>
         <div className="pf-hero-txt">
@@ -119,7 +119,7 @@ export default function Portfolio() {
             const risk = CATS.reduce((a, c) => a + ((ww[c.slug] || 0) / tw) * RISK[c.slug], 0);
             return (
               <button key={x.k} className={'pf-prof' + (pk === x.k ? ' on' : '')} onClick={() => pick(x.k)}>
-                <img src={still(m.still, STILLS[m.still] - 1)} alt="" />
+                <img src={thumb(m.still, STILLS[m.still] - 1)} alt="" loading="lazy" decoding="async" />
                 <div className="pf-prof-body">
                   <span className="pf-tag">{m.icon} {m.tag}</span>
                   <b>{x.name}</b>
@@ -141,7 +141,7 @@ export default function Portfolio() {
         <div className="pf-alloc">
           {plan.rows.map((r) => (
             <div key={r.c.slug} className={'pf-sec' + (r.q > 0 ? '' : ' off')}>
-              <img src={still(r.c.slug, STILLS[r.c.slug] - 1)} alt="" />
+              <img src={thumb(r.c.slug, STILLS[r.c.slug] - 1)} alt="" loading="lazy" decoding="async" />
               <div className="pf-sec-shade" />
               <div className="pf-sec-top">
                 <span>{r.c.icon} {r.c.name}</span>
