@@ -1,13 +1,12 @@
 'use client';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Film, Story } from '../../../components/Film';
 import { STORY } from '../../../lib/story';
 import ProjectCard from '../../../components/ProjectCard';
 import { CATS, PROJECTS, getC, last } from '../../../lib/data';
+import StageView from '../../../components/StageView';
 
-const Scene3D = dynamic(() => import('../../../components/Scene3D'), { ssr: false });
 
 export default function Sector() {
   const { slug } = useParams();
@@ -39,8 +38,9 @@ export default function Sector() {
           <p className="muted small">Диапазоните са илюстрация за демото, а не пазарни данни или обещание.</p>
         </div>
         <div className="hero-3d">
-          <Scene3D key={feat.scene} type={feat.scene} stage={last(feat)} frac={0.6} height={460} />
-          <Link href={'/project/' + feat.id} className="stage-chip">{feat.name} · отвори проекта →</Link>
+          <StageView key={feat.id} p={feat} auto height={460}>
+            <Link href={'/project/' + feat.id} className="stage-chip">{feat.name} · отвори проекта →</Link>
+          </StageView>
         </div>
       </section>
 

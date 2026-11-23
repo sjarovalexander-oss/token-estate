@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useStore } from '../../providers';
@@ -8,8 +7,8 @@ import { LoopVideo } from '../../../components/Film';
 import BuyModal from '../../../components/BuyModal';
 import { PayoutChart } from '../../../components/Bits';
 import { FEE, PROJECTS, getP, getC, eur, last, target, totalPer, retLabel, termLabel } from '../../../lib/data';
+import StageView from '../../../components/StageView';
 
-const Scene3D = dynamic(() => import('../../../components/Scene3D'), { ssr: false });
 
 function Countdown({ to }) {
   const [now, setNow] = useState(Date.now());
@@ -111,8 +110,7 @@ export default function Project() {
 
       <section className="hero">
         <div className="hero-3d">
-          <Scene3D type={p.scene} stage={ps.stage} frac={ps.prog / p.N} height={560} />
-          <div className="stage-chip">Етап: {p.stages[ps.stage].k} · завърти с мишката</div>
+          <StageView key={p.id} p={p} stage={ps.stage} height={560} badge={ps.stage === last(p) && <span className="sv-badge">{p.unit}: {ps.prog} / {p.N}</span>} />
         </div>
         <div className="hero-txt">
           <div className="eyebrow"><Link href={'/sector/' + c.slug}>{c.icon} {c.name}</Link> · {p.loc}</div>

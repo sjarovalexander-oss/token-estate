@@ -53,4 +53,36 @@ for (const [name, files] of Object.entries(VIDEOS)) {
     console.warn('video skipped:', name, '-', e.message);
   }
 }
+
+// Фотореалистичните кадри по етапи (FLUX 3), по реда на етапите
+const STILLS = {
+  stroitelstvo: ['174520_2be2d600-6b4c-4d42-a3c5-1d6a97cf56c0', '174521_f2839bf4-431a-435b-a20f-4d78e257abc0', '174550_0eea87e0-5543-4d9c-8176-6e1c5518d260', '174529_de93a3c2-8e18-490d-a12a-d919d7264f86', '174333_67b7e75c-9399-4b67-9664-232e0367523d'],
+  energia: ['174531_31cc84ea-5c30-4ddf-8bd1-6d7193cc2054', '174551_f5c0400f-eff6-42cf-aa0b-dfe354dfd62f', '174550_ef012b8b-3a97-4a14-9a0c-29bc01e4e1df', '174335_4127b530-56d7-4062-be71-ba7b52c27f27'],
+  naem: ['174552_78bb4e43-d6c4-4dbf-93a2-1ce4294ba60a', '174519_4a085bcc-d7c4-469e-9472-11082096a567', '174521_eec9f158-4c79-42ab-bc78-330295b10456', '174336_7b752bb4-fdde-4e48-99d5-9a920eaaeeea'],
+  remont: ['174523_2ec59d4e-d0a9-4116-8448-bf830c18ee6f', '174551_c6768546-5e37-44bc-a8be-8b6175fe6072', '174537_e7b12755-174b-4e04-ad08-995441dccdf0', '174334_130d438a-8f7d-427c-945a-87a3a174653a'],
+  hoteli: ['174535_5ab5f8be-dd10-498c-aaba-dd1274978140', '174534_5f6399e9-ccde-49d6-8724-b4881b351af5', '174538_cf8f297e-330e-4e8c-ba3d-c78ec93fe229', '174332_91b5354e-7463-4651-b8a9-c5301f757da5'],
+  zemia: ['174537_83629f38-3909-419e-8b4e-89533f08365e', '174534_ecd7de2c-7d63-4ea8-8a7d-eb6f05802e4a', '174536_b0ddf1ad-71ac-4f4f-937d-08f10381788a', '174333_c2cd554a-2d04-433b-8082-8d7b303fe92f'],
+};
+mkdirSync(`${OUT}/stills`, { recursive: true });
+let nst = 0;
+for (const [cat, list] of Object.entries(STILLS)) {
+  for (const [i, f] of list.entries()) {
+    const c = `${CACHE}/still-${f.slice(-12)}.jpg`;
+    try {
+      if (!existsSync(c)) {
+        const res = await fetch(BASE + f + '.png');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const tmp = c + '.png';
+        writeFileSync(tmp, Buffer.from(await res.arrayBuffer()));
+        ff(['-i', tmp, '-vf', 'scale=1600:-2', '-q:v', '4', c]);
+        rmSync(tmp);
+      }
+      copyFileSync(c, `${OUT}/stills/${cat}-${i}.jpg`);
+      nst++;
+    } catch (e) {
+      console.warn('still skipped:', cat, i, '-', e.message);
+    }
+  }
+}
+console.log('stills ok:', nst);
 writeFileSync(`${OUT}/manifest.json`, JSON.stringify(done));

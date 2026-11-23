@@ -83,7 +83,7 @@ export default function Admin() {
             ))}
             {!s.apps.length && <li className="muted">Няма заявки.</li>}
           </ul>
-          <p className="muted small">Одобрената заявка става проект в каталога със собствена страница, 3D модел и пазар. Нови заявки идват от страницата <Link href="/owners">„За собственици“</Link>.</p>
+          <p className="muted small">Одобрената заявка става проект в каталога със собствена страница, визуализация и пазар. Нови заявки идват от страницата <Link href="/owners">„За собственици“</Link>.</p>
         </div>
         <div className="card">
           <h3>Набрани средства по секции</h3>
@@ -115,7 +115,7 @@ export default function Admin() {
               </button>
             ))}
           </div>
-          <p className="muted small">Смяната на етапа променя 3D модела и ориентировъчната стойност на токена (сега {eur(fairValue(p, ps))}).</p>
+          <p className="muted small">Смяната на етапа сменя кадъра на проекта и ориентировъчната стойност на токена (сега {eur(fairValue(p, ps))}).</p>
           <label>{p.unit}: <b>{ps.prog}</b> / {p.N}</label>
           <input type="range" min="0" max={p.N} value={ps.prog} disabled={ps.stage !== L} onChange={(e) => setProg(p.id, +e.target.value)} />
           {ps.stage !== L && <p className="muted small">Активно на последния етап: „{p.stages[L].k}“.</p>}

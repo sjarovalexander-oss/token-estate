@@ -1,11 +1,10 @@
 'use client';
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useStore } from '../providers';
 import { PROJECTS, getP, getC, fairValue, paidPer, totalPer, last, eur } from '../../lib/data';
+import StageView from '../../components/StageView';
 
-const Scene3D = dynamic(() => import('../../components/Scene3D'), { ssr: false });
 
 export default function Profile() {
   const { s } = useStore();
@@ -81,7 +80,7 @@ export default function Profile() {
           <section className="two wide-left">
             <div className="card">
               <h3>{cur.p.name}</h3>
-              <Scene3D key={cur.p.scene} type={cur.p.scene} stage={cur.ps.stage} frac={cur.ps.prog / cur.p.N} height={400} />
+              <StageView key={cur.p.id} p={cur.p} stage={cur.ps.stage} height={400} />
               <p className="muted small">Етап: {cur.p.stages[cur.ps.stage].k}. {cur.p.unit}: {cur.ps.prog} от {cur.p.N}.</p>
             </div>
             <div className="card">
