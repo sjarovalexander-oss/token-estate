@@ -4,7 +4,7 @@ import { startPreload } from '../lib/preload';
 import { CATS, FEE, PROJECTS, getP, fairValue, initState, last, today, syncCustom, makeProject, seedProj } from '../lib/data';
 
 const Ctx = createContext(null);
-const KEY = 'token-estate-demo-v3';
+const KEY = 'token-estate-demo-v4';
 
 export function useStore() {
   return useContext(Ctx);
@@ -18,7 +18,7 @@ export default function Providers({ children }) {
     try {
       st = JSON.parse(localStorage.getItem(KEY));
     } catch (e) {}
-    setS(st && st.v === 3 ? st : initState());
+    setS(st && st.v === 4 ? st : initState());
   }, []);
 
   // филмите на секциите се теглят на заден план още при отваряне на сайта
