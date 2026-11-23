@@ -23,8 +23,8 @@ export default function Sector() {
       </nav>
 
       <Film name={c.slug} height="190vh" key={c.slug}>
-        <div className="eyebrow">Секция</div>
-        <h1>{c.icon} {c.name}</h1>
+        <div className="eyebrow">{c.icon} Секция</div>
+        <h1>{c.name}</h1>
         <p className="lead">{c.lead}</p>
       </Film>
 
