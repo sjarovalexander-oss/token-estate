@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -11,7 +10,6 @@ const Scene3D = dynamic(() => import('../../../components/Scene3D'), { ssr: fals
 export default function Sector() {
   const { slug } = useParams();
   const c = getC(slug);
-  const [sent, setSent] = useState(false);
   if (!c) return <section className="card center"><h2>Няма такава секция</h2><Link className="btn sm" href="/">Към проектите</Link></section>;
   const list = PROJECTS.filter((p) => p.cat === c.slug);
   const feat = list[0];
@@ -63,7 +61,7 @@ export default function Sector() {
               <div className="eyebrow">За собственици на проекти</div>
               <h3>Търсиш финансиране в „{c.name}“?</h3>
               <p className="muted small">Изпрати проекта си за проверка. При одобрение го обявяваме за набиране до 5 000 000 € за 12 месеца.</p>
-              {sent ? <p className="ok small">Заявката е записана (демо).</p> : <button className="btn sm" onClick={() => setSent(true)}>Предложи проект</button>}
+              <Link className="btn sm" href={'/owners?cat=' + c.slug}>Предложи проект</Link>
             </div>
           </div>
         </div>

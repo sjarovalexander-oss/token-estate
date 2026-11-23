@@ -3,7 +3,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useStore } from '../providers';
-import { PROJECTS, getP, getC, fairValue, paidPer, totalPer, eur } from '../../lib/data';
+import { PROJECTS, getP, getC, fairValue, paidPer, totalPer, last, eur } from '../../lib/data';
 
 const Scene3D = dynamic(() => import('../../components/Scene3D'), { ssr: false });
 
@@ -118,7 +118,18 @@ export default function Profile() {
           </table>
         </div>
         <div className="card">
-          <h3>Документи</h3>
+          <h3>Предстоящи плащания</h3>
+          <ul className="news">
+            {rows.map((r) => {
+              const L = last(r.p), op = r.ps.stage === L, fin = op && r.ps.prog >= r.p.N;
+              const txt = fin ? 'Проектът е изплатен изцяло.' : r.p.type === 'income'
+                ? (op ? 'Следващо тримесечие: ' + eur((r.ps.mine * r.p.price * r.p.yld) / 4) : 'По ' + eur((r.ps.mine * r.p.price * r.p.yld) / 4) + ' на тримесечие след етап „' + r.p.stages[L].short + '“')
+                : (op ? 'Следваща вълна продажби: ' + eur((r.ps.mine * r.p.payout) / r.p.N) : 'До ' + eur(r.ps.mine * r.p.payout) + ' при продажбата, около месец ' + r.p.months);
+              return <li key={r.p.id}><span>{getC(r.p.cat).icon}</span><span className="grow"><b>{r.p.name}</b><br />{txt}</span></li>;
+            })}
+            {!rows.length && <li className="muted">Няма очаквани плащания.</li>}
+          </ul>
+          <h3 style={{ marginTop: 20 }}>Документи</h3>
           <ul className="docs">
             {['Основен информационен документ (KIIS)', 'Договор за инвестиция', 'Сертификат за дял', 'Независима оценка на проекта', 'Тримесечен отчет'].map((d) => (
               <li key={d}><span>📄</span>{d}<em>демо</em></li>

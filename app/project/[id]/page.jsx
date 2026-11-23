@@ -4,7 +4,9 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useStore } from '../../providers';
-import { FEE, getP, getC, eur, last, target, totalPer, retLabel, termLabel } from '../../../lib/data';
+import BuyModal from '../../../components/BuyModal';
+import { PayoutChart } from '../../../components/Bits';
+import { FEE, PROJECTS, getP, getC, eur, last, target, totalPer, retLabel, termLabel } from '../../../lib/data';
 
 const Scene3D = dynamic(() => import('../../../components/Scene3D'), { ssr: false });
 
@@ -70,7 +72,8 @@ function Calculator({ p }) {
 export default function Project() {
   const { id } = useParams();
   const p = getP(id);
-  const { s, buyPrimary, tick, complete } = useStore();
+  const { s, tick, complete } = useStore();
+  const [modal, setModal] = useState(false);
   const [q, setQ] = useState(1);
   const [flash, setFlash] = useState(false);
   const ps = p ? s.proj[p.id] : null;
@@ -131,7 +134,7 @@ export default function Project() {
                     <b>{q}</b>
                     <button onClick={() => setQ(Math.min(p.tokens - ps.sold, q + 1))}>+</button>
                   </div>
-                  <button className="btn" onClick={() => buyPrimary(p.id, q)} disabled={s.cash < q * p.price}>
+                  <button className="btn" onClick={() => setModal(true)} disabled={s.cash < q * p.price}>
                     Купи за {eur(q * p.price)}
                   </button>
                 </div>
@@ -148,6 +151,8 @@ export default function Project() {
           </div>
         </div>
       </section>
+
+      {modal && <BuyModal p={p} q={q} onClose={() => setModal(false)} />}
 
       <section className="kpis">
         <div className="card kpi"><span>Цена на токен</span><b>{eur(p.price)}</b></div>
@@ -170,6 +175,28 @@ export default function Project() {
             <span><i className="mine" /> твои ({ps.mine})</span>
             <span><i className="free" /> свободни ({p.tokens - ps.sold})</span>
           </div>
+        </div>
+      </section>
+
+      <section className="two wide-left">
+        <div className="card">
+          <h3>Какво получаваш за един токен във времето</h3>
+          <PayoutChart p={p} ps={ps} />
+          <p className="muted small">
+            {p.type === 'exit'
+              ? 'Плащанията идват на части, докато се продава проектът, до общо ' + eur(p.payout) + ' за токен.'
+              : 'По ' + eur((p.price * p.yld) / 4) + ' на тримесечие за ' + p.years + ' години, а накрая се връща и вложената сума от ' + eur(p.price) + '.'}{' '}
+            Плътната линия показва вече изплатеното. Илюстрация, не обещание.
+          </p>
+        </div>
+        <div className="card">
+          <h3>Други проекти</h3>
+          <ul className="news">
+            {PROJECTS.filter((x) => x.id !== p.id).slice(0, 5).map((x) => (
+              <li key={x.id}><span>{getC(x.cat).icon}</span><Link className="grow" href={'/project/' + x.id}>{x.name}</Link><b className="gold">{retLabel(x)}</b></li>
+            ))}
+          </ul>
+          <Link className="btn ghost" href="/portfolio">Сравни всички →</Link>
         </div>
       </section>
 

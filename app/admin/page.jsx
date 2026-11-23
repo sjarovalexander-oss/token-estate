@@ -2,14 +2,15 @@
 import { useState } from 'react';
 import { useStore } from '../providers';
 import ProjectPicker, { usePicked } from '../../components/ProjectPicker';
-import { PROJECTS, getP, getC, fairValue, platformRevenue, target, last, eur } from '../../lib/data';
+import Link from 'next/link';
+import { CATS, PROJECTS, getP, getC, fairValue, platformRevenue, target, last, eur } from '../../lib/data';
 
 export default function Admin() {
-  const { s, setStage, setProg, complete, release, approveKyc, addNews, reset } = useStore();
+  const { s, setStage, setProg, complete, release, approveKyc, addNews, reset, approveApp, rejectApp } = useStore();
   const [pid, setPid] = usePicked();
   const [news, setNews] = useState('');
-  const p = getP(pid);
-  const ps = s.proj[pid];
+  const p = getP(pid) || PROJECTS[0];
+  const ps = s.proj[p.id];
   const L = last(p);
   const raisedAll = PROJECTS.reduce((a, x) => a + s.proj[x.id].sold * x.price, 0);
   const revAll = PROJECTS.reduce((a, x) => a + platformRevenue(x, s.proj[x.id]).total, 0);
@@ -31,7 +32,7 @@ export default function Admin() {
 
       <section className="kpis">
         <div className="card kpi"><span>Набрани общо</span><b className="gold">{eur(raisedAll)}</b></div>
-        <div className="card kpi"><span>Проекти</span><b>{PROJECTS.length} <small>в 6 секции</small></b></div>
+        <div className="card kpi"><span>Проекти</span><b>{PROJECTS.length} <small>в {CATS.length} секции</small></b></div>
         <div className="card kpi"><span>Инвеститори с чакащ KYC</span><b>{s.investors.filter((x) => !x.kyc).length}</b></div>
         <div className="card kpi"><span>Приходи на платформата</span><b className="green">{eur(revAll)}</b></div>
       </section>
@@ -44,7 +45,7 @@ export default function Admin() {
             {PROJECTS.map((x) => {
               const xs = s.proj[x.id];
               return (
-                <tr key={x.id} className={x.id === pid ? 'hl' : ''} onClick={() => setPid(x.id)}>
+                <tr key={x.id} className={x.id === p.id ? 'hl' : ''} onClick={() => setPid(x.id)}>
                   <td>{x.name}</td>
                   <td>{getC(x.cat).icon} {getC(x.cat).name}</td>
                   <td>{xs.sold} / {x.tokens}</td>
@@ -58,21 +59,65 @@ export default function Admin() {
         </table>
       </section>
 
-      <ProjectPicker pid={pid} setPid={setPid} />
+      <section className="two" id="apps">
+        <div className="card">
+          <h3>Заявки за нови проекти</h3>
+          <ul className="apps">
+            {s.apps.map((a) => (
+              <li key={a.id}>
+                <div className="grow">
+                  <b>{getC(a.cat).icon} {a.name}</b>
+                  <span className="muted small">{a.company} · {a.loc} · {eur(a.amount)} · {a.ret}% · токен {eur(a.price)}</span>
+                </div>
+                {a.status === 'new' ? (
+                  <>
+                    <button className="btn ghost" onClick={() => rejectApp(a.id)}>Откажи</button>
+                    <button className="btn sm" onClick={() => approveApp(a.id)}>Одобри и обяви</button>
+                  </>
+                ) : a.status === 'approved' ? (
+                  <Link className="tag ok" href={'/project/' + a.pid}>обявен · отвори →</Link>
+                ) : (
+                  <span className="tag warn">отказан</span>
+                )}
+              </li>
+            ))}
+            {!s.apps.length && <li className="muted">Няма заявки.</li>}
+          </ul>
+          <p className="muted small">Одобрената заявка става проект в каталога със собствена страница, 3D модел и пазар. Нови заявки идват от страницата <Link href="/owners">„За собственици“</Link>.</p>
+        </div>
+        <div className="card">
+          <h3>Набрани средства по секции</h3>
+          <div className="hbars">
+            {CATS.map((c) => {
+              const ps2 = PROJECTS.filter((x) => x.cat === c.slug);
+              const got = ps2.reduce((a, x) => a + s.proj[x.id].sold * x.price, 0), goal = ps2.reduce((a, x) => a + target(x), 0);
+              return (
+                <div key={c.slug}>
+                  <span>{c.icon} {c.name}</span>
+                  <div className="bar"><i style={{ width: (got / goal) * 100 + '%' }} /></div>
+                  <b>{eur(got)}</b>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <ProjectPicker pid={p.id} setPid={setPid} />
 
       <section className="two">
         <div className="card">
           <h3>Етап · {p.name}</h3>
           <div className="stages">
             {p.stages.map((st, i) => (
-              <button key={st.k} className={i === ps.stage ? 'on' : ''} onClick={() => (i === 1 && ps.stage === 0 ? complete(pid) : setStage(pid, i))}>
+              <button key={st.k} className={i === ps.stage ? 'on' : ''} onClick={() => (i === 1 && ps.stage === 0 ? complete(p.id) : setStage(p.id, i))}>
                 <b>{i + 1}</b> {st.k}
               </button>
             ))}
           </div>
           <p className="muted small">Смяната на етапа променя 3D модела и ориентировъчната стойност на токена (сега {eur(fairValue(p, ps))}).</p>
           <label>{p.unit}: <b>{ps.prog}</b> / {p.N}</label>
-          <input type="range" min="0" max={p.N} value={ps.prog} disabled={ps.stage !== L} onChange={(e) => setProg(pid, +e.target.value)} />
+          <input type="range" min="0" max={p.N} value={ps.prog} disabled={ps.stage !== L} onChange={(e) => setProg(p.id, +e.target.value)} />
           {ps.stage !== L && <p className="muted small">Активно на последния етап: „{p.stages[L].k}“.</p>}
         </div>
         <div className="card">
@@ -85,7 +130,7 @@ export default function Admin() {
                     <td>Транш {i + 1} · {p.stages[i + 1].short}</td>
                     <td>{t}% · {eur((target(p) * t) / 100)}</td>
                     <td className="right">
-                      {ps.released[i] ? <span className="tag ok">освободен</span> : <button className="btn sm" disabled={ps.stage < i + 1} onClick={() => release(pid, i)}>Освободи</button>}
+                      {ps.released[i] ? <span className="tag ok">освободен</span> : <button className="btn sm" disabled={ps.stage < i + 1} onClick={() => release(p.id, i)}>Освободи</button>}
                     </td>
                   </tr>
                 ) : null
@@ -126,7 +171,7 @@ export default function Admin() {
           <p className="muted small">Таксите са примерен модел, а не пазарни данни.</p>
           <h3 style={{ marginTop: 22 }}>Публикувай новина за проекта</h3>
           <textarea rows="3" value={news} onChange={(e) => setNews(e.target.value)} placeholder="Напр. Достигнат е следващият етап." />
-          <button className="btn sm" disabled={!news.trim()} onClick={() => { addNews(pid, news.trim()); setNews(''); }}>Публикувай</button>
+          <button className="btn sm" disabled={!news.trim()} onClick={() => { addNews(p.id, news.trim()); setNews(''); }}>Публикувай</button>
         </div>
       </section>
     </>

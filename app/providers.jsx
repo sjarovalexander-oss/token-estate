@@ -1,9 +1,9 @@
 'use client';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { FEE, getP, fairValue, initState, last, today } from '../lib/data';
+import { FEE, PROJECTS, getP, fairValue, initState, last, today, syncCustom, makeProject, seedProj } from '../lib/data';
 
 const Ctx = createContext(null);
-const KEY = 'token-estate-demo-v2';
+const KEY = 'token-estate-demo-v3';
 
 export function useStore() {
   return useContext(Ctx);
@@ -17,7 +17,7 @@ export default function Providers({ children }) {
     try {
       st = JSON.parse(localStorage.getItem(KEY));
     } catch (e) {}
-    setS(st && st.v === 2 ? st : initState());
+    setS(st && st.v === 3 ? st : initState());
   }, []);
 
   useEffect(() => {
@@ -103,11 +103,41 @@ export default function Providers({ children }) {
         }),
       release: (pid, i) => up(pid, (ps) => ({ ps: { released: ps.released.map((r, j) => (j === i ? true : r)) } })),
       addNews: (pid, t) => up(pid, (ps, s) => ({ news: [{ d: today(), pid, t }, ...s.news] })),
+      buyMany: (list) =>
+        setS((s) => {
+          let cash = s.cash, txs = s.tx;
+          const proj = { ...s.proj };
+          list.forEach(({ pid, q }) => {
+            const p = getP(pid), ps = proj[pid];
+            const n = Math.min(q, p.tokens - ps.sold, Math.floor(cash / p.price));
+            if (n <= 0 || ps.stage !== 0) return;
+            proj[pid] = { ...ps, sold: ps.sold + n, mine: ps.mine + n };
+            cash -= n * p.price;
+            txs = [{ d: today(), pid, t: 'Покупка · първичен пазар', qty: n, price: p.price }, ...txs];
+          });
+          return { ...s, cash, tx: txs, proj };
+        }),
+      addApp: (a) => setS((s) => ({ ...s, apps: [{ ...a, id: Date.now(), status: 'new', d: today() }, ...s.apps] })),
+      rejectApp: (id) => setS((s) => ({ ...s, apps: s.apps.map((a) => (a.id === id ? { ...a, status: 'rejected' } : a)) })),
+      approveApp: (id) =>
+        setS((s) => {
+          const a = s.apps.find((x) => x.id === id);
+          if (!a || a.status !== 'new') return s;
+          const p = makeProject(a);
+          return {
+            ...s,
+            custom: [...s.custom, p],
+            proj: { ...s.proj, [p.id]: seedProj(p, 3, 0) },
+            apps: s.apps.map((x) => (x.id === id ? { ...x, status: 'approved', pid: p.id } : x)),
+            news: [{ d: today(), pid: p.id, t: 'Проектът е одобрен и обявен за набиране.' }, ...s.news],
+          };
+        }),
       approveKyc: (i) => setS((s) => ({ ...s, investors: s.investors.map((x, j) => (j === i ? { ...x, kyc: true } : x)) })),
       reset: () => setS(initState()),
     };
   }, []);
 
   if (!s) return <div className="loading">Зареждане…</div>;
+  syncCustom(s.custom);
   return <Ctx.Provider value={{ s, ...api }}>{children}</Ctx.Provider>;
 }
