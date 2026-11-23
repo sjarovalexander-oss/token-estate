@@ -8,7 +8,7 @@ import ffmpeg from 'ffmpeg-static';
 
 const BASE = 'https://d8j0ntlcm91z4.cloudfront.net/user_3Hb8aAx5bTAdhpgfXGPPCxJrCKL/hf_20261123_';
 const VIDEOS = {
-  home: ['172323_f256052c-997e-4854-bbab-3332662b2ad4'],
+  home: ['185322_7064a047-c7b2-4ca8-b089-05e39ac3e22c'],
   stroitelstvo: ['174938_d7970d2d-559f-42fd-bcad-4163c34a4733', '174937_6042d54d-4aa9-4a19-980c-499297ac8b57', '174937_93091081-b7d9-4514-87f8-e4e82918b243', '174938_27e8fb95-2223-40a6-ba68-cfe40d24712f'],
   energia: ['174938_5452b8c7-429e-4ad6-9549-65859980db5b', '174939_50cfae6f-1a86-45a0-8f0f-b580ee011084', '174937_cec2f78b-156b-4a0f-9750-540f8656d29e'],
   naem: ['174937_27cf417e-348e-44c0-b5ec-cb186466f9a8', '174937_d823b7c9-de20-4e1f-aa23-a15f755d6c15', '174937_7b5c37e7-1fad-4721-90e7-f5b320019f11'],

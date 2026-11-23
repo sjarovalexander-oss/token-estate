@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <>
-      <Film name="home" height="180vh">
+      <Film name="home" height="420vh">
         <div className="eyebrow">Платформа за токенизация на реални активи</div>
         <h1>Инвестирай на части в сгради, енергия, хотели и земя</h1>
         <p className="lead">Реални проекти, разделени на токени от <b>500 €</b>. Избираш секция, следиш проекта на живо и получаваш своя дял от дохода.</p>
