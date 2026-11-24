@@ -71,7 +71,7 @@ export default function Home() {
                   <span>{p.name} · <b className="gold">{retLabel(p)}</b></span>
                   <span>{Math.round((ps.sold / p.tokens) * 100)}% {t('набрани', 'raised')}</span>
                 </div>
-                <span className="btn sm">{t('Виж филма и проекта →', 'Watch the film and project →')}</span>
+                <span className="btn sm">{t('Виж проекта →', 'See the project →')}</span>
               </div>
             </Link>
           );
