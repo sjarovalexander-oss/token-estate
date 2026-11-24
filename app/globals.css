@@ -838,3 +838,4 @@ a.sv-badge:hover { text-decoration: none; border-color: var(--gold); }
 .logo { white-space: nowrap; }
 @media (min-width: 901px) and (max-width: 1180px) { .wallet { display: none; } .nav nav a { padding: 6px 6px; font-size: 12.5px; } }
 .pt-hero .row { align-items: center; }
+.pt-cbtns{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}

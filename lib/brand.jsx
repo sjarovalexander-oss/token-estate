@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-import { BRAND } from './brand-name';
-export { BRAND };
+import { BRAND, CONTACT } from './brand-name';
+export { BRAND, CONTACT };
 
 export const THEMES = [
   { id: 'gold', bg: 'Злато', en: 'Gold', v: { '--gold': '#d8b36a', '--gold2': '#f3d9a0', '--bg': '#080b12', '--panel': '#111726', '--panel2': '#161e31', '--line': '#232d45' } },

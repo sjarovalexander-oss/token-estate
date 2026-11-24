@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePrefs } from '../../lib/brand';
+import { usePrefs, CONTACT } from '../../lib/brand';
 import { Reveal } from '../../components/Bits';
 
 const MODULES = [
@@ -136,6 +136,10 @@ export default function Partners() {
               <b>{t('Александър Сяров', 'Alexander Syarov')}</b>
               <p className="muted small">{t('Технология и продукт', 'Technology and product')}</p>
             </div>
+          </div>
+          <div className="pt-cbtns">
+            <a className="btn sm" href={'mailto:' + CONTACT.email + '?subject=' + encodeURIComponent(t('Платформа за токенизация – среща', 'Tokenization platform – meeting'))}>✉ {CONTACT.email}</a>
+            <a className="btn ghost sm" href={'tel:' + CONTACT.tel}>☎ {CONTACT.phone}</a>
           </div>
           <p className="muted small">{t('Ще се радваме на 30-минутна среща, за да покажем демото на живо и да обсъдим нуждите ви.', 'We would be glad to have a 30-minute call to walk you through the demo and discuss your needs.')}</p>
         </div>
