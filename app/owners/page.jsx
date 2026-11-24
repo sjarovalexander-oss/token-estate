@@ -92,7 +92,7 @@ export default function Owners() {
                 {CATS.map((x) => (
                   <button key={x.slug} className={f.cat === x.slug ? 'on' : ''} onClick={() => pick(x.slug)}>
                     <img src={thumb(x.slug, STILLS[x.slug] - 1)} alt="" loading="lazy" decoding="async" />
-                    <span>{x.icon} {x.name}</span>
+                    <span>{x.name}</span>
                   </button>
                 ))}
               </div>
@@ -126,7 +126,7 @@ export default function Owners() {
               <div className="pc-body">
                 <div className="eyebrow">{f.loc || 'Местоположение'}</div>
                 <h3>{f.name || 'Името на проекта'}</h3>
-                <p className="muted small">{c.icon} {c.name} · {f.company || 'твоята фирма'}</p>
+                <p className="muted small">{c.name} · {f.company || 'твоята фирма'}</p>
                 <div className="pc-nums">
                   <div><span>Токен</span><b>{eur(f.price)}</b></div>
                   <div><span>Доходност</span><b className="gold">{f.ret}%{exit ? '' : ' год.'}</b></div>

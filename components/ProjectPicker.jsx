@@ -17,7 +17,7 @@ export default function ProjectPicker({ pid, setPid }) {
     <div className="chips">
       {PROJECTS.map((p) => (
         <button key={p.id} className={p.id === pid ? 'on' : ''} onClick={() => setPid(p.id)}>
-          {getC(p.cat).icon} {p.name}
+          {p.name}
         </button>
       ))}
     </div>

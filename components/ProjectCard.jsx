@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useStore } from '../app/providers';
-import { getC, eur, retLabel, termLabel } from '../lib/data';
+import { getC, eur, retLabel, termLabel, thumb } from '../lib/data';
 
 export default function ProjectCard({ p }) {
   const { s } = useStore();
@@ -12,7 +12,9 @@ export default function ProjectCard({ p }) {
   return (
     <Link href={'/project/' + p.id} className={'pcard pc-' + p.scene}>
       <div className="pc-top">
-        <span className="pc-icon">{c.icon}</span>
+        <img className="pc-img" src={thumb(p.cat, p.frames ? p.frames[ps.stage] : Math.min(ps.stage, 3))} alt="" loading="lazy" decoding="async" />
+        <i className="pc-shade" />
+        <span />
         <span className="tag ok">{status}</span>
       </div>
       <div className="pc-body">

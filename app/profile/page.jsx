@@ -99,7 +99,7 @@ export default function Profile() {
                   <button key={r.p.id} className={'pr-card' + (cur.p.id === r.p.id ? ' on' : '')} onClick={() => setSel(r.p.id)}>
                     <img src={thumb(r.p.cat, frameOf(r.p, r.ps.stage))} alt="" loading="lazy" decoding="async" />
                     <div className="pr-card-shade" />
-                    <div className="pr-card-top"><span>{getC(r.p.cat).icon} {getC(r.p.cat).name}</span><span className="sv-chip"><i /> {r.p.stages[r.ps.stage].short}</span></div>
+                    <div className="pr-card-top"><span>{getC(r.p.cat).name}</span><span className="sv-chip"><i /> {r.p.stages[r.ps.stage].short}</span></div>
                     <div className="pr-card-body">
                       <b className="pr-name">{r.p.name}</b>
                       <div className="pr-nums">
@@ -197,7 +197,7 @@ export default function Profile() {
         <div className="card">
           <h3>Документи</h3>
           <ul className="pr-list">
-            {[['📄', 'Основен информационен документ (KIIS)', 'PDF · 4 стр.'], ['✍️', 'Договор за инвестиция', 'подписан електронно'], ['🏅', 'Сертификати за дял', rows.length + ' бр.'], ['📊', 'Тримесечен отчет', 'последно тримесечие'], ['🧾', 'Данъчна справка за годината', 'готова през януари']].map(([ic, t, m]) => (
+            {[['PDF', 'Основен информационен документ (KIIS)', 'PDF · 4 стр.'], ['PDF', 'Договор за инвестиция', 'подписан електронно'], ['PDF', 'Сертификати за дял', rows.length + ' бр.'], ['PDF', 'Тримесечен отчет', 'последно тримесечие'], ['PDF', 'Данъчна справка за годината', 'готова през януари']].map(([ic, t, m]) => (
               <li key={t}><span className="pr-ic">{ic}</span><div className="grow"><b>{t}</b><span className="muted">{m}</span></div><em className="tag">демо</em></li>
             ))}
           </ul>

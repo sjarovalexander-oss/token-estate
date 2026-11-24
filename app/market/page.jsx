@@ -128,7 +128,7 @@ export default function Market() {
         <img key={p.id + ps.stage} src={still(p.cat, frameOf(p, ps.stage))} alt="" className="on" fetchpriority="high" />
         <div className="mk-hero-shade" />
         <div className="mk-hero-txt">
-          <div className="eyebrow">Табло за обяви · {c.icon} {c.name}</div>
+          <div className="eyebrow">Табло за обяви · {c.name}</div>
           <h1>{p.name}</h1>
           <p className="lead">Обяви между инвеститори за прехвърляне на токени, преди проектът да е приключил. Платформата не е място за търговия.</p>
           <div className="mk-stage"><i /> Етап: {p.stages[ps.stage].k}</div>
@@ -151,7 +151,7 @@ export default function Market() {
             <img src={thumb(x.cat, frameOf(x, xs.stage))} alt="" loading="lazy" decoding="async" />
             <div className="mk-card-shade" />
             <div className="mk-card-body">
-              <span>{getC(x.cat).icon} {x.name}</span>
+              <span>{x.name}</span>
               <b>{eur(f)}</b>
               <em className={xs.stage === 0 ? 'muted' : ch >= 0 ? 'green' : 'red'}>{xs.stage === 0 ? 'набиране' : pctTxt(ch)}</em>
             </div>
@@ -167,7 +167,7 @@ export default function Market() {
 
       {!openMkt ? (
         <section className="card center mk-closed">
-          <div className="okmark" style={{ background: 'var(--gold)', boxShadow: '0 0 0 10px rgba(216,179,106,.15)' }}>⏳</div>
+          <div className="okmark" style={{ background: 'var(--gold)', boxShadow: '0 0 0 10px rgba(216,179,106,.15)' }}>…</div>
           <h2>Обявите за „{p.name}“ още не са отворени</h2>
           <p className="muted">Обявите между инвеститори се отварят едва след успешното набиране. Продадени досега: {ps.sold} от {p.tokens}.</p>
           <div className="bar" style={{ maxWidth: 420, margin: '14px auto' }}><i style={{ width: (ps.sold / p.tokens) * 100 + '%' }} /></div>

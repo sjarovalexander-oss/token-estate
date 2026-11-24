@@ -69,7 +69,6 @@ export default function Partners() {
           {MODULES.map(([ic, b, e, db, de, href]) => (
             <Reveal key={b} as="div">
               <Link href={href} className="card pt-mod">
-                <span className="pt-ic">{ic}</span>
                 <b>{t(b, e)}</b>
                 <p className="muted small">{t(db, de)}</p>
                 <em>{t('Виж в демото →', 'See it in the demo →')}</em>

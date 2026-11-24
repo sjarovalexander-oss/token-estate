@@ -71,7 +71,7 @@ export default function Statistics() {
         <div className="st-list">
           {CLOSED.map(([n, cat, st, cls, r, ne, ste, re]) => (
             <div key={n} className="st-row">
-              <span>{getC(cat).icon} {t(n, ne)}</span>
+              <span>{t(n, ne)}</span>
               <span className={'tag ' + (cls === 'ok' ? 'ok' : cls === 'late' ? 'warn' : 'bad')}>{t(st, ste)}</span>
               <b>{t(r, re)}</b>
             </div>
@@ -87,7 +87,7 @@ export default function Statistics() {
             if (!ps) return null;
             return (
               <Link key={p.id} href={'/project/' + p.id} className="st-row">
-                <span>{getC(p.cat).icon} {p.name}</span>
+                <span>{p.name}</span>
                 <span className="tag">{p.stages[ps.stage].k}</span>
                 <b>{eur(ps.sold * p.price)} {t('от', 'of')} {eur(target(p))}</b>
               </Link>

@@ -106,7 +106,7 @@ export default function Project() {
         <div className="film-shade" />
         <div className="vb-txt">
           <div className="eyebrow">{p.loc}</div>
-          <h2>{c.icon} {c.name}</h2>
+          <h2>{c.name}</h2>
         </div>
       </section>
 
@@ -115,7 +115,7 @@ export default function Project() {
           <StageView key={p.id} p={p} stage={ps.stage} height={560} badge={ps.stage === last(p) && <span className="sv-badge">{p.unit}: {ps.prog} / {p.N}</span>} />
         </div>
         <div className="hero-txt">
-          <div className="eyebrow"><Link href={'/sector/' + c.slug}>{c.icon} {c.name}</Link> · {p.loc}</div>
+          <div className="eyebrow"><Link href={'/sector/' + c.slug}>{c.name}</Link> · {p.loc}</div>
           <h1>{p.name}</h1>
           <p className="lead">
             {p.tagline} Един токен струва <b>{eur(p.price)}</b> и носи прогнозно <b>{retLabel(p)}</b>.
@@ -202,7 +202,7 @@ export default function Project() {
           <h3>Други проекти</h3>
           <ul className="news">
             {PROJECTS.filter((x) => x.id !== p.id).slice(0, 5).map((x) => (
-              <li key={x.id}><span>{getC(x.cat).icon}</span><Link className="grow" href={'/project/' + x.id}>{x.name}</Link><b className="gold">{retLabel(x)}</b></li>
+              <li key={x.id}><Link className="grow" href={'/project/' + x.id}>{x.name}</Link><b className="gold">{retLabel(x)}</b></li>
             ))}
           </ul>
           <Link className="btn ghost" href="/portfolio">Сравни всички →</Link>

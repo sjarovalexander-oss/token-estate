@@ -9,10 +9,10 @@ import { CATS, PROJECTS, PROFILES, DEPOSIT, STILLS, still, thumb, getC, annual, 
 // Риск по секции (1 = най-нисък, 5 = най-висок) — илюстрация за демото
 const RISK = { zemia: 1, naem: 2, energia: 2, hoteli: 3, stroitelstvo: 4, remont: 5 };
 const PROF_META = {
-  cons: { icon: '🛡️', tag: 'Спокойно', still: 'zemia' },
-  bal: { icon: '⚖️', tag: 'Баланс', still: 'naem' },
-  dyn: { icon: '🚀', tag: 'Растеж', still: 'stroitelstvo' },
-  custom: { icon: '🎛️', tag: 'Мое', still: 'hoteli' },
+  cons: { icon: '', tag: 'Спокойно', still: 'zemia' },
+  bal: { icon: '', tag: 'Баланс', still: 'naem' },
+  dyn: { icon: '', tag: 'Растеж', still: 'stroitelstvo' },
+  custom: { icon: '', tag: 'Мое', still: 'hoteli' },
 };
 const QUICK = [5000, 10000, 25000, 50000, 100000];
 const Q = 20; // хоризонт: 5 години = 20 тримесечия
@@ -123,7 +123,7 @@ export default function Portfolio() {
               <button key={x.k} className={'pf-prof' + (pk === x.k ? ' on' : '')} onClick={() => pick(x.k)}>
                 <img src={thumb(m.still, STILLS[m.still] - 1)} alt="" loading="lazy" decoding="async" />
                 <div className="pf-prof-body">
-                  <span className="pf-tag">{m.icon} {m.tag}</span>
+                  <span className="pf-tag">{m.tag}</span>
                   <b>{x.name}</b>
                   <p>{x.note}</p>
                   <div className="pf-prof-nums">
@@ -146,7 +146,7 @@ export default function Portfolio() {
               <img src={thumb(r.c.slug, STILLS[r.c.slug] - 1)} alt="" loading="lazy" decoding="async" />
               <div className="pf-sec-shade" />
               <div className="pf-sec-top">
-                <span>{r.c.icon} {r.c.name}</span>
+                <span>{r.c.name}</span>
                 <Risk v={RISK[r.c.slug]} />
               </div>
               <div className="pf-sec-body">
@@ -245,7 +245,7 @@ export default function Portfolio() {
               return (
                 <tr key={p.id}>
                   <td>{p.name}</td>
-                  <td>{getC(p.cat).icon} {getC(p.cat).name}</td>
+                  <td>{getC(p.cat).name}</td>
                   <td><Risk v={RISK[p.cat]} /></td>
                   <td>{eur(p.price)}</td>
                   <td>{retLabel(p)}</td>

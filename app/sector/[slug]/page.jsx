@@ -20,17 +20,17 @@ export default function Sector() {
       <EnNote />
 
 
-<Story key={c.slug} name={c.slug} chapters={STORY[c.slug]} label={c.icon + ' ' + c.name + ' · скролни надолу'} />
+<Story key={c.slug} name={c.slug} chapters={STORY[c.slug]} label={c.name + ' · скролни надолу'} />
 
       <nav className="chips" style={{ marginTop: 18 }}>
         {CATS.map((x) => (
-          <Link key={x.slug} href={'/sector/' + x.slug} className={x.slug === c.slug ? 'on' : ''}>{x.icon} {x.name}</Link>
+          <Link key={x.slug} href={'/sector/' + x.slug} className={x.slug === c.slug ? 'on' : ''}>{x.name}</Link>
         ))}
       </nav>
 
       <section className="hero">
         <div className="hero-txt">
-          <div className="eyebrow">{c.icon} {c.name}</div>
+          <div className="eyebrow">{c.name}</div>
           <h2 className="h1s">{c.income.split('.')[0]}.</h2>
           <div className="kpis three">
             <div className="card kpi"><span>Типичен срок</span><b>{c.term}</b></div>

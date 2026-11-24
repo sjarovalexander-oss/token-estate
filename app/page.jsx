@@ -64,7 +64,7 @@ export default function Home() {
               <div className="sec-shade" />
               <span className="sec-num">{String(i + 1).padStart(2, '0')}</span>
               <div className="sec-body">
-                <div className="eyebrow">{c.icon} {list.length} {en ? (list.length === 1 ? 'project' : 'projects') : list.length === 1 ? 'проект' : 'проекта'} · {en ? CATS_EN[c.slug]?.term || c.term : c.term}</div>
+                <div className="eyebrow">{list.length} {en ? (list.length === 1 ? 'project' : 'projects') : list.length === 1 ? 'проект' : 'проекта'} · {en ? CATS_EN[c.slug]?.term || c.term : c.term}</div>
                 <h3>{en ? CATS_EN[c.slug]?.name || c.name : c.name}</h3>
                 <p>{en ? CATS_EN[c.slug]?.lead || c.lead : c.lead}</p>
                 <div className="sec-foot">

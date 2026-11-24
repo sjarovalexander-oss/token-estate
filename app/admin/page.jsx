@@ -40,8 +40,8 @@ export default function Admin() {
           <p className="muted">Демо достъп без парола. Всяка промяна тук се вижда веднага в сайта.</p>
         </div>
         <div className="row">
-          {pending.length > 0 && <a className="ad-alert" href="#apps">🔔 {pending.length} {pending.length === 1 ? 'нова заявка' : 'нови заявки'}</a>}
-          {kycWait > 0 && <a className="ad-alert warn" href="#kyc">🪪 {kycWait} чакат KYC</a>}
+          {pending.length > 0 && <a className="ad-alert" href="#apps">{pending.length} {pending.length === 1 ? 'нова заявка' : 'нови заявки'}</a>}
+          {kycWait > 0 && <a className="ad-alert warn" href="#kyc">{kycWait} чакат KYC</a>}
           <button className="btn ghost" onClick={reset}>Нулирай демото</button>
         </div>
       </section>
@@ -67,7 +67,7 @@ export default function Admin() {
                   {x.custom && <span className="tag ok">нов</span>}
                 </div>
                 <div className="mk-card-body">
-                  <span>{getC(x.cat).icon} {x.name}</span>
+                  <span>{x.name}</span>
                   <b>{eur(xs.sold * x.price)}</b>
                   <div className="bar"><i style={{ width: (xs.sold / x.tokens) * 100 + '%' }} /></div>
                 </div>
@@ -80,7 +80,7 @@ export default function Admin() {
       <section className="ad-work">
         <div className="card ad-view">
           <div className="mk-head">
-            <h3>{getC(p.cat).icon} {p.name}</h3>
+            <h3>{p.name}</h3>
             <Link className="small" href={'/project/' + p.id}>виж страницата →</Link>
           </div>
           <StageView key={p.id} p={p} stage={ps.stage} height={360} badge={<span className="sv-badge">токен ≈ {eur(fairValue(p, ps))}</span>} />
@@ -151,7 +151,7 @@ export default function Admin() {
                 <img src={thumb(a.cat, STILLS[a.cat] - 1)} alt="" loading="lazy" decoding="async" />
                 <div className="grow">
                   <b>{a.name}</b>
-                  <span className="muted">{getC(a.cat).icon} {a.company} · {a.loc}</span>
+                  <span className="muted">{a.company} · {a.loc}</span>
                   <span className="ad-app-nums">{eur(a.amount)} · {a.ret}% · токен {eur(a.price)}</span>
                 </div>
                 <div className="ad-app-act">
@@ -176,7 +176,7 @@ export default function Admin() {
           <div className="ad-rev">
             {revs.map(({ x, r }) => (
               <div key={x.id}>
-                <span>{getC(x.cat).icon} {x.name}</span>
+                <span>{x.name}</span>
                 <div className="ad-rev-bar">
                   <i className="a" style={{ width: (r.raise / maxRev) * 100 + '%' }} />
                   <i className="b" style={{ width: (r.success / maxRev) * 100 + '%' }} />
