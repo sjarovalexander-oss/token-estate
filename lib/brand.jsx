@@ -4,16 +4,10 @@ import { useEffect, useState } from 'react';
 import { BRAND, CONTACT } from './brand-name';
 export { BRAND, CONTACT };
 
-export const THEMES = [
-  { id: 'gold', bg: 'Злато', en: 'Gold', v: { '--gold': '#d8b36a', '--gold2': '#f3d9a0', '--bg': '#080b12', '--panel': '#111726', '--panel2': '#161e31', '--line': '#232d45' } },
-  { id: 'emerald', bg: 'Изумруд', en: 'Emerald', v: { '--gold': '#3fbf8f', '--gold2': '#9fe8c8', '--bg': '#06100d', '--panel': '#0e1a16', '--panel2': '#13221d', '--line': '#1f3a31' } },
-  { id: 'sapphire', bg: 'Сапфир', en: 'Sapphire', v: { '--gold': '#5b9dff', '--gold2': '#b5d3ff', '--bg': '#060a14', '--panel': '#0e1526', '--panel2': '#131c33', '--line': '#22305a' } },
-  { id: 'bordeaux', bg: 'Бордо', en: 'Bordeaux', v: { '--gold': '#d9727f', '--gold2': '#f5bcc4', '--bg': '#10070a', '--panel': '#1c0f13', '--panel2': '#25141a', '--line': '#3d2229' } },
-];
 
 const KEY = 'te-prefs';
 const EV = 'te-prefs';
-const DEF = { name: BRAND.name, theme: 'gold', lang: 'bg' };
+const DEF = { name: BRAND.name, lang: 'bg' };
 
 function read() {
   try {
@@ -28,16 +22,9 @@ export function setPrefs(x) {
   try {
     localStorage.setItem(KEY, JSON.stringify(n));
   } catch (e) {}
-  applyTheme(n.theme);
   window.dispatchEvent(new Event(EV));
 }
 
-export function applyTheme(id) {
-  const t = THEMES.find((x) => x.id === id) || THEMES[0];
-  const r = document.documentElement;
-  Object.entries(t.v).forEach(([k, v]) => r.style.setProperty(k, v));
-  r.dataset.theme = t.id;
-}
 
 export function usePrefs() {
   const [p, setP] = useState(DEF);

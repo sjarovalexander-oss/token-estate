@@ -60,7 +60,7 @@ export default function Partners() {
           <Link className="btn" href="/">{t('Разгледай демото', 'Explore the demo')}</Link>
           <a className="btn ghost" href="#contact">{t('Контакт', 'Contact')}</a>
         </div>
-        <p className="muted small">{t('Демото е оптимизирано за компютър. Натисни „Тема“ горе, за да видиш платформата със своите цветове и име.', 'The demo is optimised for desktop. Press “Theme” at the top to see the platform with your colours and name.')}</p>
+        <p className="muted small">{t('Демото е оптимизирано за компютър. Натисни „Твоето име“ горе, за да видиш платформата със своето име.', 'The demo is optimised for desktop. Press “Your name” at the top to see the platform under your own name.')}</p>
       </section>
 
       <section>
